@@ -1,565 +1,235 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Phone | Tecnología Elite Nicaragua</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+/* GENERAL */
+body { 
+    font-family: 'Poppins', sans-serif; 
+    margin: 0; 
+    background-color: #000000; 
+    color: #1c1c1c;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: 0.2px;
+}
 
-    <!-- NAVEGACIÓN -->
-    <header>
-        <nav class="container">
-            <div class="brand">
-                <img src="logo.jpeg" alt="VIP Phone Logo" class="logo-img">
-                <h1>VIP<span> PHONE</span></h1>
-            </div>
-            <div class="nav-links">
-                <a href="#hero">Inicio</a>
-                <a href="#productos">Catálogo</a>
-                <a href="#contactos" class="btn-nav">Reservar ya</a>
-                <button class="btn-admin-toggle" id="btnAdminToggle" onclick="toggleAdminPanel()">
-                    <i class="fas fa-lock"></i> Admin
-                </button>
-            </div>
-        </nav>
-    </header>
+.container { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    padding: 0 20px; 
+}
 
-    <!-- PANEL DE ADMINISTRACIÓN -->
-    <div id="adminOverlay" class="admin-overlay hidden">
-        <div class="admin-panel">
-            <div class="admin-header">
-                <h2><i class="fas fa-cogs"></i> Panel de Administración</h2>
-                <button class="admin-close" onclick="closeAdminPanel()"><i class="fas fa-times"></i></button>
-            </div>
+header { 
+    background-color: #121212; 
+    color: #ffffff; 
+    padding: 18px 0;
+    position: sticky;
+    top: 0; 
+    z-index: 1000; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(212,175,55,0.1); 
+    border-bottom: 1px solid rgba(212,175,55,0.2);
+}
 
-            <!-- LOGIN -->
-            <div id="adminLogin" class="admin-section">
-                <p class="admin-desc">Ingresa la contraseña para gestionar el catálogo.</p>
-                <div class="admin-login-form">
-                    <input type="password" id="adminPassword" placeholder="Contraseña" onkeydown="if(event.key==='Enter') checkPassword()">
-                    <button class="btn-admin-action" onclick="checkPassword()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
-                </div>
-                <p id="loginError" class="login-error hidden">Contraseña incorrecta.</p>
-            </div>
+nav { display: flex; justify-content: space-between; align-items: center; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo-img { height: 48px; width: 48px; border: 2px solid #d4af37; box-shadow: 0 0 10px rgba(212,175,55,0.3); transition: transform 0.3s ease; }
+.brand:hover .logo-img { transform: rotate(5deg) scale(1.05); }
+.brand h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px; margin: 0; text-transform: uppercase; }
+.brand span { color: #d4af37; font-weight: 800; }
+.nav-links { display: flex; align-items: center; gap: 25px; }
+.nav-links a { color: #e0e0e0; text-decoration: none; font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 1.2px; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); position: relative; padding: 5px 0; }
+.nav-links a:hover { color: #ffffff; text-shadow: 0 0 10px rgba(212,175,55,0.5); }
+.nav-links a::after { content: ''; position: absolute; width: 0; height: 2px; bottom: 0; left: 0; background-color: #d4af37; transition: width 0.3s ease; }
+.nav-links a:hover::after { width: 100%; }
+.btn-nav { background-color: #d4af37; color: #121212 !important; padding: 10px 20px; border-radius: 5px; font-weight: 600; margin-left: 10px; }
 
-            <!-- PANEL PRINCIPAL -->
-            <div id="adminMain" class="admin-section hidden">
-                <!-- Estado de conexión Firebase -->
-                <div id="firebaseStatus" class="firebase-status">
-                    <i class="fas fa-circle-notch fa-spin"></i> Conectando a la base de datos...
-                </div>
+#hero { padding: 100px 0; background: linear-gradient(rgba(0,0,0,0.8),rgba(0,0,0,0.8)), url('portada hogareña 2.jpeg') center/cover; text-align: center; color: #ffffff; }
+.badge-vip { color: #d4af37; border: 1px solid #d4af37; padding: 5px 15px; border-radius: 20px; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; }
+#hero h1 { font-size: 3rem; margin: 20px 0; }
+#hero h1 span { color: #d4af37; }
+.cta-hero { background-color: #d4af37; color: #121212; padding: 12px 30px; text-decoration: none; font-weight: bold; border-radius: 20px; display: inline-block; transition: 0.3s; margin: 6px 4px; }
+.cta-herowat { background-color: #03c51d; color: #f8f8f8; padding: 12px 30px; text-decoration: none; font-weight: bold; border-radius: 20px; display: inline-block; transition: 0.3s; margin: 6px 4px; }
+.cta-heroface { background-color: #1877f2; color: #ffffff; padding: 12px 30px; text-decoration: none; font-weight: bold; border-radius: 20px; display: inline-block; transition: 0.3s; margin: 6px 4px; }
 
-                <div class="admin-tabs">
-                    <button class="tab-btn active" onclick="showTab('tabAgregar')">Agregar Producto</button>
-                    <button class="tab-btn" onclick="showTab('tabEditar')">Editar / Eliminar</button>
-                </div>
+#features { padding: 80px 0; background-color: #ffffff; }
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; text-align: center; max-width: 100%; margin: 0 auto; padding: 0 20px; }
+.feature-item { padding: 40px 30px; background: #ffffff; border-radius: 15px; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(181,147,14,0.4); }
+.feature-item:hover { transform: translateY(-10px); box-shadow: 0 15px 45px rgba(205,158,6,0.5); }
+.feature-item i { font-size: 3rem; color: #d4af37; margin-bottom: 20px; display: block; transition: transform 0.3s ease; }
+.feature-item:hover i { transform: scale(1.1); }
+.feature-item h3 { font-size: 1.25rem; color: #121212; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.feature-item p { font-size: 0.95rem; color: #666666; line-height: 1.6; max-width: 280px; margin: 0 auto; }
 
-                <!-- TAB: AGREGAR -->
-                <div id="tabAgregar" class="tab-content">
-                    <div class="form-group">
-                        <label>Nombre del Producto</label>
-                        <input type="text" id="newName" placeholder="Ej: iPhone 15 Pro Max">
-                    </div>
-                    <div class="form-group">
-                        <label>Descripción</label>
-                        <textarea id="newDesc" rows="3" placeholder="Ej: Envío gratis + Garantía..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Precio (USD)</label>
-                        <input type="text" id="newPrice" placeholder="Ej: $999">
-                    </div>
-                    <div class="form-group">
-                        <label>Etiqueta (tag)</label>
-                        <input type="text" id="newTag" placeholder="Ej: Alta Gama, PRO, Nuevo">
-                    </div>
-                    <div class="form-group">
-                        <label>Foto del Producto</label>
-                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('newImgFile').click()">
-                            <div class="upload-placeholder" id="uploadPlaceholder">
-                                <i class="fas fa-camera"></i>
-                                <span>Toca aquí para subir foto</span>
-                                <small>JPG, PNG, WEBP — desde galería o cámara</small>
-                            </div>
-                            <img id="newImgPreview" class="img-preview hidden" alt="Vista previa">
-                        </div>
-                        <input type="file" id="newImgFile" accept="image/*" style="display:none" onchange="previewImage(this,'newImgPreview','uploadPlaceholder','newImgData')">
-                        <input type="hidden" id="newImgData">
-                        <button type="button" class="btn-remove-img hidden" id="btnRemoveNew" onclick="removeImage('newImgPreview','uploadPlaceholder','newImgData','btnRemoveNew','newImgFile')">
-                            <i class="fas fa-times"></i> Quitar foto
-                        </button>
-                    </div>
-                    <button class="btn-admin-action full" onclick="agregarProducto()">
-                        <i class="fas fa-plus-circle"></i> Agregar al Catálogo
-                    </button>
-                    <p id="addSuccess" class="add-success hidden"><i class="fas fa-check-circle"></i> ¡Producto agregado en todos los dispositivos!</p>
-                    <p id="addError" class="login-error hidden"><i class="fas fa-times-circle"></i> Error al guardar. Verifica tu conexión.</p>
-                </div>
+#productos { padding: 60px 0; }
+.section-title { color: #e0e0e0; text-align: center; margin-bottom: 40px; font-size: 2rem; }
 
-                <!-- TAB: EDITAR/ELIMINAR -->
-                <div id="tabEditar" class="tab-content hidden">
-                    <p class="admin-desc">Selecciona un producto para editarlo o eliminarlo.</p>
-                    <div id="productListAdmin" class="product-list-admin"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+/* Loading catálogo */
+.catalogo-loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #aaa;
+}
+.catalogo-loading i {
+    font-size: 2.5rem;
+    color: #d4af37;
+    display: block;
+    margin-bottom: 16px;
+}
+.catalogo-loading p {
+    font-size: 0.95rem;
+    margin: 0;
+}
 
-    <!-- MODAL EDITAR PRODUCTO -->
-    <div id="editModal" class="edit-modal hidden">
-        <div class="edit-modal-content">
-            <div class="admin-header">
-                <h3><i class="fas fa-edit"></i> Editar Producto</h3>
-                <button class="admin-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" id="editName">
-            </div>
-            <div class="form-group">
-                <label>Descripción</label>
-                <textarea id="editDesc" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Precio</label>
-                <input type="text" id="editPrice">
-            </div>
-            <div class="form-group">
-                <label>Etiqueta</label>
-                <input type="text" id="editTag">
-            </div>
-            <div class="form-group">
-                <label>Foto del Producto</label>
-                <div class="upload-area" id="editUploadArea" onclick="document.getElementById('editImgFile').click()">
-                    <div class="upload-placeholder" id="editUploadPlaceholder">
-                        <i class="fas fa-camera"></i>
-                        <span>Toca aquí para cambiar foto</span>
-                        <small>JPG, PNG, WEBP</small>
-                    </div>
-                    <img id="editImgPreview" class="img-preview hidden" alt="Vista previa">
-                </div>
-                <input type="file" id="editImgFile" accept="image/*" style="display:none" onchange="previewImage(this,'editImgPreview','editUploadPlaceholder','editImgData')">
-                <input type="hidden" id="editImgData">
-                <button type="button" class="btn-remove-img hidden" id="btnRemoveEdit" onclick="removeImage('editImgPreview','editUploadPlaceholder','editImgData','btnRemoveEdit','editImgFile')">
-                    <i class="fas fa-times"></i> Quitar foto
-                </button>
-            </div>
-            <button class="btn-admin-action full" onclick="guardarEdicion()">
-                <i class="fas fa-save"></i> Guardar Cambios
-            </button>
-        </div>
-    </div>
+.productos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+.product-card { background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; }
+.product-card:hover { transform: translateY(-10px); }
+.img-box { height: 250px; position: relative; background-color: #eee; }
+.img-box img { width: 100%; height: 100%; object-fit: cover; }
+.tag { position: absolute; top: 10px; right: 10px; background-color: #d4af37; color: #121212; padding: 5px 10px; font-size: 0.7rem; font-weight: bold; border-radius: 5px; }
+.product-info { padding: 20px; text-align: center; }
+.descripcion { color: #555; font-size: 0.85rem; margin: 8px 0; }
+.precio { color: #07bf32; font-weight: bold; font-size: 1.3rem; margin: 10px 0; }
+.btn-buy { background-color: #121212; color: #ffffff; text-decoration: none; display: block; padding: 10px; border-radius: 5px; transition: 0.3s; }
+.btn-buy:hover { background-color: #25d366; }
 
-    <main>
-        <!-- HERO SECTION -->
-        <section id="hero">
-            <div class="hero-content container">
-                <span class="badge-vip">Elite Mobile, tv and Service</span>
-                <h1>Exclusividad en <span>Managua y Tipitapa</span></h1>
-                <p>Equipos de alta gama con envíos garantizados a Managua y Tipitapa.</p>
-                <a href="https://wa.me/+50558268713" target="_blank" class="cta-herowat"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                <a href="https://www.facebook.com/profile.php?id=61574584821262" target="_blank" class="cta-heroface"><i class="fab fa-facebook"></i> Facebook</a>
-                <a href="#productos" class="cta-hero">Ver Catálogo</a>
-            </div>
-        </section>
+footer { background-color: #121212; color: #ffffff; padding: 60px 0 20px; }
+.footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
+.footer-form { display: flex; flex-direction: column; gap: 10px; }
+.footer-form input, .footer-form textarea { padding: 12px; border-radius: 5px; border: none; outline: none; }
+.btn-send { background-color: #d4af37; color: #121212; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 5px; transition: 0.3s; }
+.copy { text-align: center; margin-top: 40px; opacity: 0.5; font-size: 0.8rem; border-top: 1px solid #333; padding-top: 20px; }
 
-        <!-- BENEFICIOS -->
-        <section id="features" class="container">
-            <div class="features-grid">
-                <div class="feature-item">
-                    <i class="fas fa-shipping-fast"></i>
-                    <h3>Envíos Express</h3>
-                    <p>Entregas rápidas en Managua y Tipitapa.</p>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Servicio Extra</h3>
-                    <p>Instalación de soportería de TV, mantenimiento de equipos y asesoría personalizada.</p>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-crown"></i>
-                    <h3>Atención VIP</h3>
-                    <p>Asesoría personalizada 24/7 por WhatsApp.</p>
-                </div>
-            </div>
-        </section>
+/* ─── ADMIN ─── */
+.btn-admin-toggle { background: transparent; border: 1px solid rgba(212,175,55,0.4); color: #d4af37; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 0.78rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; transition: all 0.3s ease; font-family: 'Poppins', sans-serif; }
+.btn-admin-toggle:hover { background: #d4af37; color: #121212; }
+.admin-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.admin-overlay.hidden { display: none; }
+.admin-panel { background: #1a1a1a; border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; width: 90%; max-width: 520px; max-height: 88vh; overflow-y: auto; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(212,175,55,0.1); }
+.admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 16px; }
+.admin-header h2, .admin-header h3 { color: #d4af37; margin: 0; font-size: 1.2rem; }
+.admin-close { background: transparent; border: none; color: #888; font-size: 1.2rem; cursor: pointer; transition: color 0.2s; }
+.admin-close:hover { color: #fff; }
+.admin-desc { color: #aaa; font-size: 0.9rem; margin-bottom: 20px; }
+.admin-login-form { display: flex; gap: 10px; }
+.admin-login-form input { flex: 1; padding: 10px 14px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; font-family: 'Poppins', sans-serif; outline: none; }
+.admin-login-form input:focus { border-color: #d4af37; }
+.login-error { color: #ff6b6b; font-size: 0.85rem; margin-top: 10px; }
+.admin-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+.tab-btn { flex: 1; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #aaa; cursor: pointer; font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; }
+.tab-btn.active, .tab-btn:hover { background: #d4af37; color: #121212; border-color: #d4af37; }
+.tab-content.hidden { display: none; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; color: #ccc; font-size: 0.82rem; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.8px; }
+.form-group input, .form-group textarea { width: 100%; padding: 10px 14px; background: #2a2a2a; border: 1px solid #444; border-radius: 8px; color: #fff; font-family: 'Poppins', sans-serif; font-size: 0.9rem; outline: none; box-sizing: border-box; resize: vertical; }
+.form-group input:focus, .form-group textarea:focus { border-color: #d4af37; }
+.form-group small { color: #666; font-size: 0.78rem; margin-top: 4px; display: block; }
+.btn-admin-action { background: #d4af37; color: #121212; border: none; padding: 11px 20px; border-radius: 8px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
+.btn-admin-action:hover { background: #f0cc5a; }
+.btn-admin-action:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-admin-action.full { width: 100%; margin-top: 8px; }
+.add-success { color: #07bf32; font-size: 0.88rem; margin-top: 10px; text-align: center; }
+.product-list-admin { display: flex; flex-direction: column; gap: 10px; max-height: 340px; overflow-y: auto; }
+.admin-product-item { display: flex; align-items: center; gap: 12px; background: #2a2a2a; border-radius: 10px; padding: 10px 14px; border: 1px solid #333; }
+.admin-product-item img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; border: 1px solid #444; }
+.admin-product-info { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.admin-product-info strong { color: #fff; font-size: 0.88rem; }
+.admin-product-info span { color: #07bf32; font-size: 0.82rem; font-weight: 600; }
+.admin-product-actions { display: flex; gap: 8px; }
+.btn-edit, .btn-delete { border: none; border-radius: 6px; width: 34px; height: 34px; cursor: pointer; font-size: 0.85rem; transition: 0.2s; }
+.btn-edit { background: rgba(212,175,55,0.15); color: #d4af37; }
+.btn-edit:hover { background: #d4af37; color: #121212; }
+.btn-delete { background: rgba(255,80,80,0.15); color: #ff6b6b; }
+.btn-delete:hover { background: #ff4444; color: #fff; }
+.edit-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9500; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.edit-modal.hidden { display: none; }
+.edit-modal-content { background: #1a1a1a; border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; width: 90%; max-width: 460px; max-height: 88vh; overflow-y: auto; padding: 28px; }
+.hidden { display: none; }
 
-        <!-- LOADING CATÁLOGO -->
-        <section id="productos" class="container">
-            <h2 class="section-title">Nuestra Colección</h2>
-            <div id="catalogoLoading" class="catalogo-loading">
-                <i class="fas fa-circle-notch fa-spin"></i>
-                <p>Cargando productos...</p>
-            </div>
-            <div class="productos-grid" id="productosGrid"></div>
-        </section>
-    </main>
+/* ─── ESTADO FIREBASE ─── */
+.firebase-status {
+    font-size: 0.78rem;
+    color: #aaa;
+    padding: 8px 12px;
+    background: #222;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #333;
+}
+.firebase-status.connected {
+    color: #07bf32;
+    border-color: rgba(7,191,50,0.3);
+    background: rgba(7,191,50,0.07);
+}
 
-    <!-- FOOTER -->
-    <footer id="contactos">
-        <div class="container footer-grid">
-            <div class="footer-info">
-                <h2>VIP PHONE</h2>
-                <p>Tecnología de élite a tu alcance.</p>
-                <p><i class="fas fa-map-marker-alt"></i> Managua - Tipitapa</p>
-            </div>
-            <form class="footer-form" id="vip-form">
-                <input type="text" id="user-name" placeholder="Tu Nombre" required>
-                <textarea id="user-msg" placeholder="¿Qué equipo buscas?" rows="3" required></textarea>
-                <button type="submit" class="btn-send">Contactar Asesor VIP</button>
-            </form>
-        </div>
-        <p class="copy">&copy; 2026 VIP PHONE NICARAGUA</p>
-    </footer>
+@media (max-width: 600px) {
+    nav { flex-direction: column; gap: 15px; }
+    .nav-links { gap: 15px; flex-wrap: wrap; justify-content: center; }
+    .admin-panel { padding: 20px; }
+    .admin-login-form { flex-direction: column; }
+}
 
-    <!-- ════════════════════════════════════════════
-         FIREBASE SDK
-    ════════════════════════════════════════════ -->
-    <script type="module">
-    // ─── IMPORTAR FIREBASE ───────────────────────
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-        getFirestore, collection, getDocs, addDoc, updateDoc,
-        deleteDoc, doc, onSnapshot, query, orderBy
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    // ════════════════════════════════════════
-    // ⚠️  PASO 1: PEGA AQUÍ TU CONFIGURACIÓN
-    //     de Firebase (ver instrucciones abajo)
-    // ════════════════════════════════════════
-    const firebaseConfig = {
-        apiKey:            "PEGA_TU_API_KEY_AQUI",
-        authDomain:        "PEGA_TU_AUTH_DOMAIN_AQUI",
-        projectId:         "PEGA_TU_PROJECT_ID_AQUI",
-        storageBucket:     "PEGA_TU_STORAGE_BUCKET_AQUI",
-        messagingSenderId: "PEGA_TU_MESSAGING_SENDER_ID_AQUI",
-        appId:             "PEGA_TU_APP_ID_AQUI"
-    };
-
-    // ─── CONSTANTES ─────────────────────────────
-    const WHATSAPP     = '+50558268713';
-    const ADMIN_PASSWORD = 'vipphone2026';
-
-    // Productos iniciales (se suben UNA sola vez a Firebase si la BD está vacía)
-    const productosIniciales = [
-        { nombre: 'Silla Gamer Edición Azul',     desc: 'Envío Gratis en Managua + Armada de silla Gratis + Garantía Garantizada + Atención Personalizada', precio: '$125',    tag: 'PRO',        img: '', orden: 1 },
-        { nombre: 'Silla Gamer Edición Roja',     desc: 'Envío Gratis en Managua + Armada de silla Gratis + Garantía Garantizada + Atención Personalizada', precio: '$125',    tag: 'PRO',        img: '', orden: 2 },
-        { nombre: 'Silla Gamer Edición Negra',    desc: 'Envío Gratis en Managua + Armada de silla Gratis + Garantía Garantizada + Atención Personalizada', precio: '$125',    tag: 'PRO',        img: '', orden: 3 },
-        { nombre: 'Silla Gamer Edición Naranja',  desc: 'Envío Gratis en Managua + Armada de silla Gratis + Garantía Garantizada + Atención Personalizada', precio: '$125',    tag: 'PRO',        img: '', orden: 4 },
-        { nombre: 'Smart TV 75" pulgadas',        desc: 'Envío Gratis + Instalación de soportería de TV + Factura membretada + Garantía Certificada',        precio: '$780',    tag: 'Alta Gama',  img: '', orden: 5 },
-        { nombre: 'Smart TV 65" pulgadas',        desc: 'Envío Gratis + Instalación de soportería de TV + Factura membretada + Garantía Certificada',        precio: '$609.99', tag: 'Alta Gama',  img: '', orden: 6 },
-        { nombre: 'Smart TV 55" pulgadas',        desc: 'Envío Gratis + Instalación de soportería de TV + Factura membretada + Garantía Certificada',        precio: '$560',    tag: 'Media Gama', img: '', orden: 7 },
-        { nombre: 'S25 Ultra',                    desc: 'Envío Gratis en Managua + Productos 100% Originales + Garantía Garantizada + Atención Personalizada', precio: '$125', tag: 'Media Gama', img: '', orden: 8 },
-    ];
-
-    // ─── INIT FIREBASE ───────────────────────────
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-    const colRef = collection(db, 'productos');
-
-    let adminAuth  = false;
-    let editandoId = null; // ID de documento Firestore
-    let productosCache = []; // copia local para el admin
-
-    // ─── FUNCIONES DE RENDER ─────────────────────
-    function renderCatalogo(productos) {
-        const grid    = document.getElementById('productosGrid');
-        const loading = document.getElementById('catalogoLoading');
-        loading.style.display = 'none';
-
-        if (!productos.length) {
-            grid.innerHTML = '<p style="color:#aaa;text-align:center;grid-column:1/-1">No hay productos en el catálogo.</p>';
-            return;
-        }
-
-        grid.innerHTML = productos.map(p => `
-            <article class="product-card">
-                <div class="img-box">
-                    <img src="${p.img || 'https://placehold.co/400x250/121212/d4af37?text=VIP+PHONE'}"
-                         alt="${p.nombre}"
-                         onerror="this.src='https://placehold.co/400x250/121212/d4af37?text=VIP+PHONE'">
-                    <span class="tag">${p.tag}</span>
-                </div>
-                <div class="product-info">
-                    <h3>${p.nombre}</h3>
-                    <p class="descripcion">${p.desc}</p>
-                    <p class="precio">${p.precio}</p>
-                    <a href="https://wa.me/${WHATSAPP}?text=Hola, quiero información sobre: ${encodeURIComponent(p.nombre)}"
-                       target="_blank" class="btn-buy">
-                        <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
-                    </a>
-                </div>
-            </article>
-        `).join('');
-    }
-
-    function renderListaAdmin(productos) {
-        const container = document.getElementById('productListAdmin');
-        if (!productos.length) {
-            container.innerHTML = '<p style="color:#aaa;font-size:.85rem">No hay productos aún.</p>';
-            return;
-        }
-        container.innerHTML = productos.map(p => `
-            <div class="admin-product-item">
-                <img src="${p.img || 'https://placehold.co/60x60/121212/d4af37?text=IMG'}"
-                     onerror="this.src='https://placehold.co/60x60/121212/d4af37?text=IMG'" alt="${p.nombre}">
-                <div class="admin-product-info">
-                    <strong>${p.nombre}</strong>
-                    <span>${p.precio}</span>
-                </div>
-                <div class="admin-product-actions">
-                    <button class="btn-edit"   onclick="window._abrirEditar('${p._docId}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn-delete" onclick="window._eliminarProducto('${p._docId}')"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // ─── ESCUCHAR CAMBIOS EN TIEMPO REAL ─────────
-    // Esto actualiza el catálogo automáticamente en TODOS los dispositivos
-    function iniciarListener() {
-        const q = query(colRef, orderBy('orden', 'asc'));
-        onSnapshot(q, (snapshot) => {
-            const productos = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
-            productosCache  = productos;
-            renderCatalogo(productos);
-            if (adminAuth) renderListaAdmin(productos);
-
-            // Estado Firebase OK
-            const status = document.getElementById('firebaseStatus');
-            if (status) {
-                status.innerHTML = '<i class="fas fa-circle" style="color:#07bf32;font-size:.6rem"></i> Base de datos conectada';
-                status.classList.add('connected');
-            }
-        }, (error) => {
-            console.error('Firebase error:', error);
-            const status = document.getElementById('firebaseStatus');
-            if (status) {
-                status.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ff6b6b"></i> Error de conexión — revisa tu config de Firebase';
-            }
-        });
-    }
-
-    // ─── SEMBRAR DATOS INICIALES (solo si BD vacía) ─
-    async function sembrarSiVacio() {
-        const snap = await getDocs(colRef);
-        if (snap.empty) {
-            for (const p of productosIniciales) {
-                await addDoc(colRef, p);
-            }
-        }
-    }
-
-    // ─── ADMIN: CONTRASEÑA ───────────────────────
-    window.checkPassword = function() {
-        const pw  = document.getElementById('adminPassword').value;
-        const err = document.getElementById('loginError');
-        if (pw === ADMIN_PASSWORD) {
-            adminAuth = true;
-            document.getElementById('adminLogin').classList.add('hidden');
-            document.getElementById('adminMain').classList.remove('hidden');
-            err.classList.add('hidden');
-            renderListaAdmin(productosCache);
-        } else {
-            err.classList.remove('hidden');
-        }
-    };
-
-    // ─── ADMIN: TABS ─────────────────────────────
-    window.showTab = function(tabId) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.remove('hidden');
-        event.target.classList.add('active');
-        if (tabId === 'tabEditar') renderListaAdmin(productosCache);
-    };
-
-    // ─── ADMIN: AGREGAR ──────────────────────────
-    window.agregarProducto = async function() {
-        const nombre = document.getElementById('newName').value.trim();
-        const desc   = document.getElementById('newDesc').value.trim();
-        const precio = document.getElementById('newPrice').value.trim();
-        const tag    = document.getElementById('newTag').value.trim();
-        const img    = document.getElementById('newImgData').value || '';
-
-        if (!nombre || !precio) { alert('El nombre y el precio son obligatorios.'); return; }
-
-        const btn = document.querySelector('#tabAgregar .btn-admin-action.full');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando...';
-
-        try {
-            const maxOrden = productosCache.length
-                ? Math.max(...productosCache.map(p => p.orden || 0)) + 1
-                : 1;
-
-            await addDoc(colRef, {
-                nombre,
-                desc,
-                precio: precio.startsWith('$') ? precio : '$' + precio,
-                tag: tag || 'Nuevo',
-                img,
-                orden: maxOrden
-            });
-
-            ['newName','newDesc','newPrice','newTag'].forEach(id => document.getElementById(id).value = '');
-            removeImage('newImgPreview','uploadPlaceholder','newImgData','btnRemoveNew','newImgFile');
-
-            const ok = document.getElementById('addSuccess');
-            ok.classList.remove('hidden');
-            setTimeout(() => ok.classList.add('hidden'), 3500);
-        } catch(e) {
-            console.error(e);
-            document.getElementById('addError').classList.remove('hidden');
-            setTimeout(() => document.getElementById('addError').classList.add('hidden'), 4000);
-        }
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar al Catálogo';
-    };
-
-    // ─── ADMIN: ELIMINAR ─────────────────────────
-    window._eliminarProducto = async function(docId) {
-        if (!confirm('¿Eliminar este producto del catálogo en todos los dispositivos?')) return;
-        try {
-            await deleteDoc(doc(db, 'productos', docId));
-        } catch(e) {
-            alert('Error al eliminar: ' + e.message);
-        }
-    };
-
-    // ─── ADMIN: ABRIR EDITAR ─────────────────────
-    window._abrirEditar = function(docId) {
-        const p = productosCache.find(x => x._docId === docId);
-        if (!p) return;
-        editandoId = docId;
-        document.getElementById('editName').value  = p.nombre;
-        document.getElementById('editDesc').value  = p.desc;
-        document.getElementById('editPrice').value = p.precio;
-        document.getElementById('editTag').value   = p.tag;
-
-        const preview     = document.getElementById('editImgPreview');
-        const placeholder = document.getElementById('editUploadPlaceholder');
-        if (p.img && !p.img.includes('placehold.co')) {
-            preview.src = p.img;
-            preview.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-            document.getElementById('btnRemoveEdit').classList.remove('hidden');
-        } else {
-            preview.classList.add('hidden');
-            placeholder.classList.remove('hidden');
-            document.getElementById('btnRemoveEdit').classList.add('hidden');
-        }
-        document.getElementById('editImgData').value = p.img || '';
-        document.getElementById('editModal').classList.remove('hidden');
-    };
-
-    // ─── ADMIN: GUARDAR EDICIÓN ──────────────────
-    window.guardarEdicion = async function() {
-        if (!editandoId) return;
-        const p = productosCache.find(x => x._docId === editandoId);
-
-        const btn = document.querySelector('#editModal .btn-admin-action.full');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando...';
-
-        try {
-            await updateDoc(doc(db, 'productos', editandoId), {
-                nombre: document.getElementById('editName').value.trim(),
-                desc:   document.getElementById('editDesc').value.trim(),
-                precio: document.getElementById('editPrice').value.trim(),
-                tag:    document.getElementById('editTag').value.trim(),
-                img:    document.getElementById('editImgData').value || (p ? p.img : ''),
-            });
-            closeEditModal();
-        } catch(e) {
-            alert('Error al guardar: ' + e.message);
-        }
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
-    };
-
-    // ─── ADMIN: CERRAR MODAL EDITAR ──────────────
-    window.closeEditModal = function() {
-        document.getElementById('editModal').classList.add('hidden');
-        editandoId = null;
-        removeImage('editImgPreview','editUploadPlaceholder','editImgData','btnRemoveEdit','editImgFile');
-    };
-
-    // ─── IMAGEN UPLOAD ───────────────────────────
-    window.previewImage = function(input, previewId, placeholderId, dataId) {
-        const file = input.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const MAX = 800;
-                let w = img.width, h = img.height;
-                if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-                if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
-                canvas.width = w; canvas.height = h;
-                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                const base64 = canvas.toDataURL('image/jpeg', 0.82);
-                const preview = document.getElementById(previewId);
-                preview.src = base64;
-                preview.classList.remove('hidden');
-                document.getElementById(placeholderId).classList.add('hidden');
-                document.getElementById(dataId).value = base64;
-                const area = document.getElementById(previewId).closest('.form-group');
-                const btnRemove = area.querySelector('.btn-remove-img');
-                if (btnRemove) btnRemove.classList.remove('hidden');
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    };
-
-    window.removeImage = function(previewId, placeholderId, dataId, btnRemoveId, fileInputId) {
-        document.getElementById(previewId).classList.add('hidden');
-        document.getElementById(previewId).src = '';
-        document.getElementById(placeholderId).classList.remove('hidden');
-        document.getElementById(dataId).value = '';
-        document.getElementById(btnRemoveId).classList.add('hidden');
-        document.getElementById(fileInputId).value = '';
-    };
-
-    // ─── PANEL ADMIN TOGGLE ──────────────────────
-    window.toggleAdminPanel = function() {
-        document.getElementById('adminOverlay').classList.toggle('hidden');
-        if (!adminAuth) {
-            document.getElementById('adminLogin').classList.remove('hidden');
-            document.getElementById('adminMain').classList.add('hidden');
-        }
-    };
-    window.closeAdminPanel = function() {
-        document.getElementById('adminOverlay').classList.add('hidden');
-    };
-
-    // ─── FORMULARIO FOOTER ───────────────────────
-    document.getElementById('vip-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const nombre  = document.getElementById('user-name').value;
-        const mensaje = document.getElementById('user-msg').value;
-        window.open(`https://wa.me/${WHATSAPP}?text=Hola, soy ${nombre}. Quiero información sobre: ${mensaje}`, '_blank');
-    });
-
-    // ─── INICIO ──────────────────────────────────
-    try {
-        await sembrarSiVacio();
-        iniciarListener();
-    } catch(e) {
-        console.error('Error al iniciar Firebase:', e);
-        document.getElementById('catalogoLoading').innerHTML =
-            '<i class="fas fa-exclamation-triangle" style="color:#ff6b6b;font-size:2rem"></i>' +
-            '<p style="color:#ff6b6b">Error de conexión.<br>Verifica la configuración de Firebase.</p>';
-    }
-
-    </script>
-</body>
-</html>
+/* ─── UPLOAD DE IMAGEN ─── */
+.upload-area {
+    border: 2px dashed rgba(212,175,55,0.4);
+    border-radius: 12px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.3s, background 0.3s;
+    min-height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #222;
+    position: relative;
+}
+.upload-area:hover {
+    border-color: #d4af37;
+    background: #2a2a2a;
+}
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px;
+    text-align: center;
+    pointer-events: none;
+}
+.upload-placeholder i {
+    font-size: 2.2rem;
+    color: #d4af37;
+}
+.upload-placeholder span {
+    color: #ccc;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.upload-placeholder small {
+    color: #666;
+    font-size: 0.78rem;
+}
+.img-preview {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+}
+.btn-remove-img {
+    margin-top: 8px;
+    background: rgba(255,80,80,0.12);
+    color: #ff6b6b;
+    border: 1px solid rgba(255,80,80,0.3);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: 0.2s;
+    width: 100%;
+}
+.btn-remove-img:hover {
+    background: #ff4444;
+    color: #fff;
+}
