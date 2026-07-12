@@ -1,565 +1,237 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP Phone | Tecnología Elite Nicaragua</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nic Store | Catalogo virtual</title>
+  <meta name="description" content="Catalogo virtual de Nic Store: telefonos, TVs, sillas gamer y mas, con cotizaciones por WhatsApp y panel privado de administracion.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="script.js"></script>
 </head>
 <body>
+  <header class="site-header">
+    <a class="brand" href="#inicio" aria-label="Ir al inicio">
+      <span class="brand-mark">NS</span>
+      <span>Nic Store</span>
+    </a>
 
-    <!-- NAVEGACIÓN -->
-    <header>
-        <nav class="container">
-            <div class="brand">
-                <img src="logo.jpeg" alt="VIP Phone Logo" class="logo-img">
-                <h1>VIP<span> PHONE</span></h1>
-            </div>
-            <div class="nav-links">
-                <a href="#hero">Inicio</a>
-                <a href="#productos">Catálogo</a>
-                <a href="#contactos" class="btn-nav">Reservar ya</a>
-                <button class="btn-admin-toggle" id="btnAdminToggle" onclick="toggleAdminPanel()">
-                    <i class="fas fa-lock"></i> Admin
-                </button>
-            </div>
-        </nav>
-    </header>
+    <button class="menu-toggle" type="button" id="menuToggleBtn" aria-label="Abrir menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
-    <!-- PANEL DE ADMINISTRACIÓN -->
-    <div id="adminOverlay" class="admin-overlay hidden">
-        <div class="admin-panel">
-            <div class="admin-header">
-                <h2><i class="fas fa-cogs"></i> Panel de Administración</h2>
-                <button class="admin-close" onclick="closeAdminPanel()"><i class="fas fa-times"></i></button>
-            </div>
+    <nav class="main-nav" id="mainNav" aria-label="Navegacion principal">
+      <a href="#catalogo">Catalogo</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
 
-            <!-- LOGIN -->
-            <div id="adminLogin" class="admin-section">
-                <p class="admin-desc">Ingresa la contraseña para gestionar el catálogo.</p>
-                <div class="admin-login-form">
-                    <input type="password" id="adminPassword" placeholder="Contraseña" onkeydown="if(event.key==='Enter') checkPassword()">
-                    <button class="btn-admin-action" onclick="checkPassword()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
-                </div>
-                <p id="loginError" class="login-error hidden">Contraseña incorrecta.</p>
-            </div>
-
-            <!-- PANEL PRINCIPAL -->
-            <div id="adminMain" class="admin-section hidden">
-                <!-- Estado de conexión Firebase -->
-                <div id="firebaseStatus" class="firebase-status">
-                    <i class="fas fa-circle-notch fa-spin"></i> Conectando a la base de datos...
-                </div>
-
-                <div class="admin-tabs">
-                    <button class="tab-btn active" onclick="showTab('tabAgregar')">Agregar Producto</button>
-                    <button class="tab-btn" onclick="showTab('tabEditar')">Editar / Eliminar</button>
-                </div>
-
-                <!-- TAB: AGREGAR -->
-                <div id="tabAgregar" class="tab-content">
-                    <div class="form-group">
-                        <label>Nombre del Producto</label>
-                        <input type="text" id="newName" placeholder="Ej: iPhone 15 Pro Max">
-                    </div>
-                    <div class="form-group">
-                        <label>Descripción</label>
-                        <textarea id="newDesc" rows="3" placeholder="Ej: Envío gratis + Garantía..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Precio (USD)</label>
-                        <input type="text" id="newPrice" placeholder="Ej: $999">
-                    </div>
-                    <div class="form-group">
-                        <label>Etiqueta (tag)</label>
-                        <input type="text" id="newTag" placeholder="Ej: Alta Gama, PRO, Nuevo">
-                    </div>
-                    <div class="form-group">
-                        <label>Foto del Producto</label>
-                        <div class="upload-area" id="uploadArea" onclick="document.getElementById('newImgFile').click()">
-                            <div class="upload-placeholder" id="uploadPlaceholder">
-                                <i class="fas fa-camera"></i>
-                                <span>Toca aquí para subir foto</span>
-                                <small>JPG, PNG, WEBP — desde galería o cámara</small>
-                            </div>
-                            <img id="newImgPreview" class="img-preview hidden" alt="Vista previa">
-                        </div>
-                        <input type="file" id="newImgFile" accept="image/*" style="display:none" onchange="previewImage(this,'newImgPreview','uploadPlaceholder','newImgData')">
-                        <input type="hidden" id="newImgData">
-                        <button type="button" class="btn-remove-img hidden" id="btnRemoveNew" onclick="removeImage('newImgPreview','uploadPlaceholder','newImgData','btnRemoveNew','newImgFile')">
-                            <i class="fas fa-times"></i> Quitar foto
-                        </button>
-                    </div>
-                    <button class="btn-admin-action full" onclick="agregarProducto()">
-                        <i class="fas fa-plus-circle"></i> Agregar al Catálogo
-                    </button>
-                    <p id="addSuccess" class="add-success hidden"><i class="fas fa-check-circle"></i> ¡Producto agregado en todos los dispositivos!</p>
-                    <p id="addError" class="login-error hidden"><i class="fas fa-times-circle"></i> Error al guardar. Verifica tu conexión.</p>
-                </div>
-
-                <!-- TAB: EDITAR/ELIMINAR -->
-                <div id="tabEditar" class="tab-content hidden">
-                    <p class="admin-desc">Selecciona un producto para editarlo o eliminarlo.</p>
-                    <div id="productListAdmin" class="product-list-admin"></div>
-                </div>
-            </div>
-        </div>
+    <div class="header-actions">
+      <button class="admin-button" type="button" id="adminToggleBtn" aria-expanded="false">Administrar</button>
+      <button class="admin-button is-hidden" type="button" id="logoutBtn">Cerrar sesion</button>
+      <button class="cart-button" type="button" data-open-cart>
+        Cotizacion <span data-cart-count>0</span>
+      </button>
     </div>
+  </header>
 
-    <!-- MODAL EDITAR PRODUCTO -->
-    <div id="editModal" class="edit-modal hidden">
-        <div class="edit-modal-content">
-            <div class="admin-header">
-                <h3><i class="fas fa-edit"></i> Editar Producto</h3>
-                <button class="admin-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" id="editName">
-            </div>
-            <div class="form-group">
-                <label>Descripción</label>
-                <textarea id="editDesc" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Precio</label>
-                <input type="text" id="editPrice">
-            </div>
-            <div class="form-group">
-                <label>Etiqueta</label>
-                <input type="text" id="editTag">
-            </div>
-            <div class="form-group">
-                <label>Foto del Producto</label>
-                <div class="upload-area" id="editUploadArea" onclick="document.getElementById('editImgFile').click()">
-                    <div class="upload-placeholder" id="editUploadPlaceholder">
-                        <i class="fas fa-camera"></i>
-                        <span>Toca aquí para cambiar foto</span>
-                        <small>JPG, PNG, WEBP</small>
-                    </div>
-                    <img id="editImgPreview" class="img-preview hidden" alt="Vista previa">
-                </div>
-                <input type="file" id="editImgFile" accept="image/*" style="display:none" onchange="previewImage(this,'editImgPreview','editUploadPlaceholder','editImgData')">
-                <input type="hidden" id="editImgData">
-                <button type="button" class="btn-remove-img hidden" id="btnRemoveEdit" onclick="removeImage('editImgPreview','editUploadPlaceholder','editImgData','btnRemoveEdit','editImgFile')">
-                    <i class="fas fa-times"></i> Quitar foto
-                </button>
-            </div>
-            <button class="btn-admin-action full" onclick="guardarEdicion()">
-                <i class="fas fa-save"></i> Guardar Cambios
-            </button>
+  <main id="inicio">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Managua y Tipitapa</p>
+        <h1>Telefonos, TVs y tecnologia con cotizacion rapida por WhatsApp.</h1>
+        <p class="lead">Explora el catalogo de Nic Store. Si no ves lo que buscas, tambien puedes pedirlo bajo encargo.</p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#catalogo">Ver catalogo</a>
+          <button class="btn secondary" type="button" id="heroAdminBtn">Panel admin</button>
         </div>
-    </div>
+      </div>
+    </section>
 
-    <main>
-        <!-- HERO SECTION -->
-        <section id="hero">
-            <div class="hero-content container">
-                <span class="badge-vip">Elite Mobile, tv and Service</span>
-                <h1>Exclusividad en <span>Managua y Tipitapa</span></h1>
-                <p>Equipos de alta gama con envíos garantizados a Managua y en Tipitapa.</p>
-                <a href="https://wa.me/+50583685309" target="_blank" class="cta-herowat"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                <a href="https://www.facebook.com/profile.php?id=61574584821262" target="_blank" class="cta-heroface"><i class="fab fa-facebook"></i> Facebook</a>
-                <a href="#productos" class="cta-hero">Ver Catálogo</a>
-            </div>
-        </section>
+    <section class="catalog-section" id="catalogo">
+      <div class="section-heading">
+        <p class="eyebrow dark">Productos disponibles</p>
+        <h2>Catalogo</h2>
+        <p>Busca, filtra y agrega articulos a una solicitud de cotizacion.</p>
+      </div>
 
-        <!-- BENEFICIOS -->
-        <section id="features" class="container">
-            <div class="features-grid">
-                <div class="feature-item">
-                    <i class="fas fa-shipping-fast"></i>
-                    <h3>Envíos Express</h3>
-                    <p>Entregas rápidas en Managua y Tipitapa.</p>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <h3>Servicio Extra</h3>
-                    <p>Instalación de soportería de TV, mantenimiento de equipos y asesoría personalizada.</p>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-crown"></i>
-                    <h3>Atención VIP</h3>
-                    <p>Asesoría personalizada 24/7 por WhatsApp.</p>
-                </div>
-            </div>
-        </section>
+      <div class="catalog-toolbar">
+        <label>
+          <span>Buscar</span>
+          <input type="search" id="searchInput" placeholder="Nombre, categoria o descripcion">
+        </label>
+        <label>
+          <span>Categoria</span>
+          <select id="categoryFilter">
+            <option value="all">Todas las categorias</option>
+          </select>
+        </label>
+        <label>
+          <span>Orden</span>
+          <select id="sortProducts">
+            <option value="featured">Destacados primero</option>
+            <option value="name">Nombre A-Z</option>
+            <option value="price-low">Precio menor</option>
+            <option value="price-high">Precio mayor</option>
+          </select>
+        </label>
+      </div>
 
-        <!-- LOADING CATÁLOGO -->
-        <section id="productos" class="container">
-            <h2 class="section-title">Nuestra Colección</h2>
-            <div id="catalogoLoading" class="catalogo-loading">
-                <i class="fas fa-circle-notch fa-spin"></i>
-                <p>Cargando productos...</p>
-            </div>
-            <div class="productos-grid" id="productosGrid"></div>
-        </section>
-    </main>
+      <div class="firebase-status" id="firebaseStatus" role="status" aria-live="polite">
+        Conectando con la base de datos...
+      </div>
 
-    <!-- FOOTER -->
-    <footer id="contactos">
-        <div class="container footer-grid">
-            <div class="footer-info">
-                <h2>VIP PHONE</h2>
-                <p>Tecnología de élite a tu alcance.</p>
-                <p><i class="fas fa-map-marker-alt"></i> Managua - Tipitapa</p>
+      <div class="product-grid" id="productGrid" aria-live="polite"></div>
+      <p class="empty-state is-hidden" id="emptyState">No hay productos con esos filtros.</p>
+    </section>
+
+    <section class="admin-login is-hidden" id="adminLogin">
+      <div class="section-heading compact">
+        <p class="eyebrow dark">Acceso privado</p>
+        <h2>Administrador</h2>
+        <p>Ingresa la contrasena para gestionar el catalogo.</p>
+      </div>
+
+      <form class="login-card" id="loginForm">
+        <label>
+          <span>Contrasena</span>
+          <input type="password" id="adminPassword" autocomplete="current-password" required>
+        </label>
+        <button class="btn primary" type="submit" id="loginBtn">Ingresar</button>
+        <p class="form-message" id="loginMessage" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="admin-section is-hidden" id="admin">
+      <div class="section-heading">
+        <p class="eyebrow dark">Panel administrativo</p>
+        <h2>Administrar productos</h2>
+        <p>Agrega, edita o elimina articulos. Las imagenes se guardan comprimidas dentro del mismo producto.</p>
+      </div>
+
+      <div class="admin-layout">
+        <form class="product-form" id="productForm">
+          <input type="hidden" id="productId">
+          <input type="hidden" id="currentImageUrl">
+          <input type="hidden" id="currentOrden">
+
+          <div class="field">
+            <label for="productName">Nombre del producto</label>
+            <input type="text" id="productName" placeholder="Ej. iPhone 15 Pro Max" required>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="productCategory">Categoria / Etiqueta</label>
+              <input type="text" id="productCategory" placeholder="Ej. PRO, Alta Gama" required>
             </div>
-            <form class="footer-form" id="vip-form">
-                <input type="text" id="user-name" placeholder="Tu Nombre" required>
-                <textarea id="user-msg" placeholder="¿Qué equipo buscas?" rows="3" required></textarea>
-                <button type="submit" class="btn-send">Contactar Asesor VIP</button>
-            </form>
+            <div class="field">
+              <label for="productPrice">Precio (USD)</label>
+              <input type="number" id="productPrice" min="0" step="0.01" placeholder="0.00" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="productStock">Stock (opcional)</label>
+              <input type="number" id="productStock" min="0" step="1" placeholder="Vacio = sin control de stock">
+            </div>
+            <div class="field">
+              <label for="productFeatured">Estado</label>
+              <select id="productFeatured">
+                <option value="false">Normal</option>
+                <option value="true">Destacado</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="productImageFile">Imagen del producto</label>
+            <input type="file" id="productImageFile" accept="image/png,image/jpeg,image/webp">
+            <p class="field-help">La imagen se comprime automaticamente. Si editas y no eliges otra, se conserva la actual.</p>
+            <div class="image-preview is-hidden" id="imagePreview"></div>
+          </div>
+
+          <div class="field">
+            <label for="productDescription">Descripcion</label>
+            <textarea id="productDescription" rows="4" placeholder="Envio gratis, garantia, detalles del producto..." required></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn primary" type="submit" id="saveProductBtn">Guardar producto</button>
+            <button class="btn secondary" type="button" id="resetFormBtn">Limpiar</button>
+          </div>
+
+          <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
+        </form>
+
+        <aside class="manager-panel">
+          <div class="manager-header">
+            <div>
+              <h3>Productos guardados</h3>
+              <span class="manager-count" id="managerCount">0 productos</span>
+            </div>
+          </div>
+          <div class="mini-table" id="productTable"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="contact-section" id="contacto">
+      <div>
+        <p class="eyebrow">Pedido especial</p>
+        <h2>Necesitas un articulo que no esta en inventario?</h2>
+        <p>Envia el modelo, marca o caracteristicas que buscas y te respondemos por WhatsApp con disponibilidad y precio.</p>
+      </div>
+      <form class="special-order" id="specialOrderForm">
+        <label>
+          <span>Articulo que buscas</span>
+          <input type="text" id="specialItem" placeholder="Ej. iPhone 13 Pro Max 256GB" required>
+        </label>
+        <label>
+          <span>Detalles</span>
+          <textarea id="specialDetails" rows="3" placeholder="Color, capacidad, estado, presupuesto o fecha deseada"></textarea>
+        </label>
+        <button class="btn primary" type="submit">Pedir por WhatsApp</button>
+      </form>
+    </section>
+  </main>
+
+  <aside class="cart-drawer" id="cartDrawer" aria-hidden="true">
+    <div class="cart-backdrop" data-close-cart></div>
+    <section class="cart-panel" aria-label="Solicitud de cotizacion">
+      <div class="cart-header">
+        <div>
+          <p class="eyebrow dark">Pedido</p>
+          <h2>Cotizacion</h2>
         </div>
-        <p class="copy">&copy; 2026 VIP PHONE NICARAGUA</p>
-    </footer>
+        <button type="button" class="icon-button" data-close-cart aria-label="Cerrar">x</button>
+      </div>
 
-    <!-- ════════════════════════════════════════════
-         FIREBASE SDK
-    ════════════════════════════════════════════ -->
-    <script type="module">
-    // ─── IMPORTAR FIREBASE ───────────────────────
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-        getFirestore, collection, getDocs, addDoc, updateDoc,
-        deleteDoc, doc, onSnapshot, query, orderBy
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      <div class="cart-items" id="cartItems"></div>
+      <p class="empty-cart" id="emptyCart">Todavia no agregaste productos.</p>
 
-    // ════════════════════════════════════════
-    // ⚠️  PASO 1: PEGA AQUÍ TU CONFIGURACIÓN
-    //     de Firebase (ver instrucciones abajo)
-    // ════════════════════════════════════════
-const firebaseConfig = {
-  apiKey: "AIzaSy...............",
-  authDomain: "vipphone-55fa3.firebaseapp.com",
-  projectId: "vipphone-55fa3",
-  storageBucket: "vipphone-55fa3.firebasestorage.app",
-  messagingSenderId: "723372908549",
-  appId: "1:723372908549:web:d8b4a3c0d2657fea397c6c",
-  measurementId: "G-QMEM80NQ3R"
-};
-    // ─── CONSTANTES ─────────────────────────────
-    const WHATSAPP     = '+50583685309';
-    const ADMIN_PASSWORD = 'vipphone2026';
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span>Total estimado</span>
+          <strong id="cartTotal">$0.00</strong>
+        </div>
+        <button class="btn primary" type="button" id="sendQuoteBtn">Enviar por WhatsApp</button>
+        <button class="btn secondary" type="button" id="clearCartBtn">Vaciar cotizacion</button>
+      </div>
+    </section>
+  </aside>
 
-    // Productos iniciales (se suben UNA sola vez a Firebase si la BD está vacía)
-    const productosIniciales = [
-        { nombre: 'Silla Gamer Edición Azul',     desc: 'Envío Gratis en Managua + Armada de silla Gratis + Garantía Garantizada + Atención Personalizada', precio: '$125',    tag: 'PRO',        img: '', orden: 1 },
-        { nombre: 'Silla Gamer Edición Roja',     desc: 'Envío Gratis en Managua + Armada de silla Gratis + Garantía Garantizada + Atención Personalizada', precio: '$125',    tag: 'PRO',        img: '', orden: 2 },
-        { nombre: 'Silla Gamer Edición Negra',    desc: 'Envío Gratis en Managua + Armada de silla Gratis + Garantía Garantizada + Atención Personalizada', precio: '$125',    tag: 'PRO',        img: '', orden: 3 },
-        { nombre: 'Silla Gamer Edición Naranja',  desc: 'Envío Gratis en Managua + Armada de silla Gratis + Garantía Garantizada + Atención Personalizada', precio: '$125',    tag: 'PRO',        img: '', orden: 4 },
-        { nombre: 'Smart TV 75" pulgadas',        desc: 'Envío Gratis + Instalación de soportería de TV + Factura membretada + Garantía Certificada',        precio: '$780',    tag: 'Alta Gama',  img: '', orden: 5 },
-        { nombre: 'Smart TV 65" pulgadas',        desc: 'Envío Gratis + Instalación de soportería de TV + Factura membretada + Garantía Certificada',        precio: '$609.99', tag: 'Alta Gama',  img: '', orden: 6 },
-        { nombre: 'Smart TV 55" pulgadas',        desc: 'Envío Gratis + Instalación de soportería de TV + Factura membretada + Garantía Certificada',        precio: '$560',    tag: 'Media Gama', img: '', orden: 7 },
-        { nombre: 'S25 Ultra',                    desc: 'Envío Gratis en Managua + Productos 100% Originales + Garantía Garantizada + Atención Personalizada', precio: '$125', tag: 'Media Gama', img: '', orden: 8 },
-    ];
+  <a class="float-wa" id="floatWa" href="#" aria-label="Contactar por WhatsApp" target="_blank" rel="noopener">
+    <svg viewBox="0 0 32 32" width="28" height="28" fill="currentColor" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.4.7 4.6 1.9 6.5L4 29l7.7-1.9c1.8 1 3.9 1.5 6.3 1.5 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-2 0-3.9-.5-5.5-1.5l-.4-.2-4.6 1.2 1.2-4.5-.3-.4C5.3 18 4.7 16.5 4.7 15c0-6.2 5.1-11.3 11.3-11.3S27.3 8.8 27.3 15 22.2 24.8 16 24.8zm6.2-8.4c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7.1-.1.3-.4.5-.5.2-.2.2-.3.3-.5.1-.2 0-.4 0-.6-.1-.2-.8-1.9-1.1-2.6-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.8 0 1.7 1.2 3.3 1.4 3.5.2.2 2.4 3.7 5.9 5.1.8.3 1.5.6 2 .7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.4.2-1.6-.1-.1-.3-.2-.6-.4z"/></svg>
+  </a>
 
-    // ─── INIT FIREBASE ───────────────────────────
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-    const colRef = collection(db, 'productos');
-
-    let adminAuth  = false;
-    let editandoId = null; // ID de documento Firestore
-    let productosCache = []; // copia local para el admin
-
-    // ─── FUNCIONES DE RENDER ─────────────────────
-    function renderCatalogo(productos) {
-        const grid    = document.getElementById('productosGrid');
-        const loading = document.getElementById('catalogoLoading');
-        loading.style.display = 'none';
-
-        if (!productos.length) {
-            grid.innerHTML = '<p style="color:#aaa;text-align:center;grid-column:1/-1">No hay productos en el catálogo.</p>';
-            return;
-        }
-
-        grid.innerHTML = productos.map(p => `
-            <article class="product-card">
-                <div class="img-box">
-                    <img src="${p.img || 'https://placehold.co/400x250/121212/d4af37?text=VIP+PHONE'}"
-                         alt="${p.nombre}"
-                         onerror="this.src='https://placehold.co/400x250/121212/d4af37?text=VIP+PHONE'">
-                    <span class="tag">${p.tag}</span>
-                </div>
-                <div class="product-info">
-                    <h3>${p.nombre}</h3>
-                    <p class="descripcion">${p.desc}</p>
-                    <p class="precio">${p.precio}</p>
-                    <a href="https://wa.me/$83685309?text=Hola, quiero información sobre: ${encodeURIComponent(p.nombre)}"
-                       target="_blank" class="btn-buy">
-                        <i class="fab fa-whatsapp"></i> Comprar por WhatsApp
-                    </a>
-                </div>
-            </article>
-        `).join('');
-    }
-
-    function renderListaAdmin(productos) {
-        const container = document.getElementById('productListAdmin');
-        if (!productos.length) {
-            container.innerHTML = '<p style="color:#aaa;font-size:.85rem">No hay productos aún.</p>';
-            return;
-        }
-        container.innerHTML = productos.map(p => `
-            <div class="admin-product-item">
-                <img src="${p.img || 'https://placehold.co/60x60/121212/d4af37?text=IMG'}"
-                     onerror="this.src='https://placehold.co/60x60/121212/d4af37?text=IMG'" alt="${p.nombre}">
-                <div class="admin-product-info">
-                    <strong>${p.nombre}</strong>
-                    <span>${p.precio}</span>
-                </div>
-                <div class="admin-product-actions">
-                    <button class="btn-edit"   onclick="window._abrirEditar('${p._docId}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn-delete" onclick="window._eliminarProducto('${p._docId}')"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // ─── ESCUCHAR CAMBIOS EN TIEMPO REAL ─────────
-    // Esto actualiza el catálogo automáticamente en TODOS los dispositivos
-    function iniciarListener() {
-        const q = query(colRef, orderBy('orden', 'asc'));
-        onSnapshot(q, (snapshot) => {
-            const productos = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
-            productosCache  = productos;
-            renderCatalogo(productos);
-            if (adminAuth) renderListaAdmin(productos);
-
-            // Estado Firebase OK
-            const status = document.getElementById('firebaseStatus');
-            if (status) {
-                status.innerHTML = '<i class="fas fa-circle" style="color:#07bf32;font-size:.6rem"></i> Base de datos conectada';
-                status.classList.add('connected');
-            }
-        }, (error) => {
-            console.error('Firebase error:', error);
-            const status = document.getElementById('firebaseStatus');
-            if (status) {
-                status.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#ff6b6b"></i> Error de conexión — revisa tu config de Firebase';
-            }
-        });
-    }
-
-    // ─── SEMBRAR DATOS INICIALES (solo si BD vacía) ─
-    async function sembrarSiVacio() {
-        const snap = await getDocs(colRef);
-        if (snap.empty) {
-            for (const p of productosIniciales) {
-                await addDoc(colRef, p);
-            }
-        }
-    }
-
-    // ─── ADMIN: CONTRASEÑA ───────────────────────
-    window.checkPassword = function() {
-        const pw  = document.getElementById('adminPassword').value;
-        const err = document.getElementById('loginError');
-        if (pw === ADMIN_PASSWORD) {
-            adminAuth = true;
-            document.getElementById('adminLogin').classList.add('hidden');
-            document.getElementById('adminMain').classList.remove('hidden');
-            err.classList.add('hidden');
-            renderListaAdmin(productosCache);
-        } else {
-            err.classList.remove('hidden');
-        }
-    };
-
-    // ─── ADMIN: TABS ─────────────────────────────
-    window.showTab = function(tabId) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.remove('hidden');
-        event.target.classList.add('active');
-        if (tabId === 'tabEditar') renderListaAdmin(productosCache);
-    };
-
-    // ─── ADMIN: AGREGAR ──────────────────────────
-    window.agregarProducto = async function() {
-        const nombre = document.getElementById('newName').value.trim();
-        const desc   = document.getElementById('newDesc').value.trim();
-        const precio = document.getElementById('newPrice').value.trim();
-        const tag    = document.getElementById('newTag').value.trim();
-        const img    = document.getElementById('newImgData').value || '';
-
-        if (!nombre || !precio) { alert('El nombre y el precio son obligatorios.'); return; }
-
-        const btn = document.querySelector('#tabAgregar .btn-admin-action.full');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando...';
-
-        try {
-            const maxOrden = productosCache.length
-                ? Math.max(...productosCache.map(p => p.orden || 0)) + 1
-                : 1;
-
-            await addDoc(colRef, {
-                nombre,
-                desc,
-                precio: precio.startsWith('$') ? precio : '$' + precio,
-                tag: tag || 'Nuevo',
-                img,
-                orden: maxOrden
-            });
-
-            ['newName','newDesc','newPrice','newTag'].forEach(id => document.getElementById(id).value = '');
-            removeImage('newImgPreview','uploadPlaceholder','newImgData','btnRemoveNew','newImgFile');
-
-            const ok = document.getElementById('addSuccess');
-            ok.classList.remove('hidden');
-            setTimeout(() => ok.classList.add('hidden'), 3500);
-        } catch(e) {
-            console.error(e);
-            document.getElementById('addError').classList.remove('hidden');
-            setTimeout(() => document.getElementById('addError').classList.add('hidden'), 4000);
-        }
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar al Catálogo';
-    };
-
-    // ─── ADMIN: ELIMINAR ─────────────────────────
-    window._eliminarProducto = async function(docId) {
-        if (!confirm('¿Eliminar este producto del catálogo en todos los dispositivos?')) return;
-        try {
-            await deleteDoc(doc(db, 'productos', docId));
-        } catch(e) {
-            alert('Error al eliminar: ' + e.message);
-        }
-    };
-
-    // ─── ADMIN: ABRIR EDITAR ─────────────────────
-    window._abrirEditar = function(docId) {
-        const p = productosCache.find(x => x._docId === docId);
-        if (!p) return;
-        editandoId = docId;
-        document.getElementById('editName').value  = p.nombre;
-        document.getElementById('editDesc').value  = p.desc;
-        document.getElementById('editPrice').value = p.precio;
-        document.getElementById('editTag').value   = p.tag;
-
-        const preview     = document.getElementById('editImgPreview');
-        const placeholder = document.getElementById('editUploadPlaceholder');
-        if (p.img && !p.img.includes('placehold.co')) {
-            preview.src = p.img;
-            preview.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-            document.getElementById('btnRemoveEdit').classList.remove('hidden');
-        } else {
-            preview.classList.add('hidden');
-            placeholder.classList.remove('hidden');
-            document.getElementById('btnRemoveEdit').classList.add('hidden');
-        }
-        document.getElementById('editImgData').value = p.img || '';
-        document.getElementById('editModal').classList.remove('hidden');
-    };
-
-    // ─── ADMIN: GUARDAR EDICIÓN ──────────────────
-    window.guardarEdicion = async function() {
-        if (!editandoId) return;
-        const p = productosCache.find(x => x._docId === editandoId);
-
-        const btn = document.querySelector('#editModal .btn-admin-action.full');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando...';
-
-        try {
-            await updateDoc(doc(db, 'productos', editandoId), {
-                nombre: document.getElementById('editName').value.trim(),
-                desc:   document.getElementById('editDesc').value.trim(),
-                precio: document.getElementById('editPrice').value.trim(),
-                tag:    document.getElementById('editTag').value.trim(),
-                img:    document.getElementById('editImgData').value || (p ? p.img : ''),
-            });
-            closeEditModal();
-        } catch(e) {
-            alert('Error al guardar: ' + e.message);
-        }
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
-    };
-
-    // ─── ADMIN: CERRAR MODAL EDITAR ──────────────
-    window.closeEditModal = function() {
-        document.getElementById('editModal').classList.add('hidden');
-        editandoId = null;
-        removeImage('editImgPreview','editUploadPlaceholder','editImgData','btnRemoveEdit','editImgFile');
-    };
-
-    // ─── IMAGEN UPLOAD ───────────────────────────
-    window.previewImage = function(input, previewId, placeholderId, dataId) {
-        const file = input.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const MAX = 800;
-                let w = img.width, h = img.height;
-                if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-                if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
-                canvas.width = w; canvas.height = h;
-                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                const base64 = canvas.toDataURL('image/jpeg', 0.82);
-                const preview = document.getElementById(previewId);
-                preview.src = base64;
-                preview.classList.remove('hidden');
-                document.getElementById(placeholderId).classList.add('hidden');
-                document.getElementById(dataId).value = base64;
-                const area = document.getElementById(previewId).closest('.form-group');
-                const btnRemove = area.querySelector('.btn-remove-img');
-                if (btnRemove) btnRemove.classList.remove('hidden');
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    };
-
-    window.removeImage = function(previewId, placeholderId, dataId, btnRemoveId, fileInputId) {
-        document.getElementById(previewId).classList.add('hidden');
-        document.getElementById(previewId).src = '';
-        document.getElementById(placeholderId).classList.remove('hidden');
-        document.getElementById(dataId).value = '';
-        document.getElementById(btnRemoveId).classList.add('hidden');
-        document.getElementById(fileInputId).value = '';
-    };
-
-    // ─── PANEL ADMIN TOGGLE ──────────────────────
-    window.toggleAdminPanel = function() {
-        document.getElementById('adminOverlay').classList.toggle('hidden');
-        if (!adminAuth) {
-            document.getElementById('adminLogin').classList.remove('hidden');
-            document.getElementById('adminMain').classList.add('hidden');
-        }
-    };
-    window.closeAdminPanel = function() {
-        document.getElementById('adminOverlay').classList.add('hidden');
-    };
-
-    // ─── FORMULARIO FOOTER ───────────────────────
-    document.getElementById('vip-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const nombre  = document.getElementById('user-name').value;
-        const mensaje = document.getElementById('user-msg').value;
-        window.open(`https://wa.me/${WHATSAPP}?text=Hola, soy ${nombre}. Quiero información sobre: ${mensaje}`, '_blank');
-    });
-
-    // ─── INICIO ──────────────────────────────────
-    try {
-        await sembrarSiVacio();
-        iniciarListener();
-    } catch(e) {
-        console.error('Error al iniciar Firebase:', e);
-        document.getElementById('catalogoLoading').innerHTML =
-            '<i class="fas fa-exclamation-triangle" style="color:#ff6b6b;font-size:2rem"></i>' +
-            '<p style="color:#ff6b6b">Error de conexión.<br>Verifica la configuración de Firebase.</p>';
-    }
-
-    </script>
+  <footer class="site-footer">
+    <strong>Nic Store</strong>
+    <span>Catalogo editable con Firebase, imagenes y cotizaciones.</span>
+  </footer>
 </body>
 </html>
