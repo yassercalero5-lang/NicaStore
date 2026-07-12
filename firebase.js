@@ -4,7 +4,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getFirestore, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "PEGA_AQUI_TU_API_KEY_REAL", // <-- reemplaza esto con tu apiKey real (el que estaba tapado)
+  apiKey:  "AIzaSyD3TnAoUc0wmv6uHGzqOhzWzFAGofzwL_o", // <-- reemplaza esto con tu apiKey real (el que estaba tapado)
   authDomain: "vipphone-55fa3.firebaseapp.com",
   projectId: "vipphone-55fa3",
   storageBucket: "vipphone-55fa3.firebasestorage.app",
