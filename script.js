@@ -10,7 +10,7 @@ import {
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const WHATSAPP_NUMBER = "50583685309";
+const WHATSAPP_NUMBER = "50578122548";
 const ADMIN_PASSWORD = "eugenio12";
 const PLACEHOLDER_IMAGE = "https://placehold.co/400x250/121212/d4af37?text=Nic+Store";
 const MAX_IMAGE_SIDE = 800;
