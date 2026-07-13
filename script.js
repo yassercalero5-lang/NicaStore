@@ -14,85 +14,49 @@ const WHATSAPP_NUMBER = "50578122548";
 const ADMIN_PASSWORD = "eugenio12";
 const PLACEHOLDER_IMAGE = "https://placehold.co/400x250/121212/d4af37?text=Nic+Store";
 const MAX_IMAGE_SIDE = 800;
+const MAX_IMAGES_PER_PRODUCT = 5;
+const FAVORITES_KEY = "nicstore_favoritos";
+const THEME_KEY = "nicstore_tema";
 
 const PRODUCT_DATABASE = {
-  Apple: {
-    keywords: ["iphone", "ipad", "macbook", "airpods", "apple"],
-    category: "Celulares"
-  },
-  Samsung: {
-    keywords: ["galaxy", "samsung"],
-    category: "Celulares"
-  },
-  Xiaomi: {
-    keywords: ["xiaomi", "redmi", "poco"],
-    category: "Celulares"
-  },
-  Motorola: {
-    keywords: ["motorola", "moto"],
-    category: "Celulares"
-  },
-  Honor: {
-    keywords: ["honor"],
-    category: "Celulares"
-  },
-  HP: {
-    keywords: ["hp", "pavilion", "victus", "omen"],
-    category: "Laptops"
-  },
-  Dell: {
-    keywords: ["dell", "inspiron", "latitude", "alienware"],
-    category: "Laptops"
-  },
-  Lenovo: {
-    keywords: ["lenovo", "thinkpad", "ideapad", "legion"],
-    category: "Laptops"
-  },
-  Asus: {
-    keywords: ["asus", "rog", "vivobook", "zenbook"],
-    category: "Laptops"
-  },
-  Acer: {
-    keywords: ["acer", "nitro", "aspire", "predator"],
-    category: "Laptops"
-  },
-  LG: {
-    keywords: ["lg"],
-    category: "Televisores"
-  },
-  Sony: {
-    keywords: ["sony", "bravia"],
-    category: "Televisores"
-  },
-  TCL: {
-    keywords: ["tcl"],
-    category: "Televisores"
-  },
-  Hisense: {
-    keywords: ["hisense"],
-    category: "Televisores"
-  }
+  Apple: { keywords: ["iphone", "ipad", "macbook", "airpods", "apple"], category: "Celulares" },
+  Samsung: { keywords: ["galaxy", "samsung"], category: "Celulares" },
+  Xiaomi: { keywords: ["xiaomi", "redmi", "poco"], category: "Celulares" },
+  Motorola: { keywords: ["motorola", "moto"], category: "Celulares" },
+  Honor: { keywords: ["honor"], category: "Celulares" },
+  HP: { keywords: ["hp", "pavilion", "victus", "omen"], category: "Laptops" },
+  Dell: { keywords: ["dell", "inspiron", "latitude", "alienware"], category: "Laptops" },
+  Lenovo: { keywords: ["lenovo", "thinkpad", "ideapad", "legion"], category: "Laptops" },
+  Asus: { keywords: ["asus", "rog", "vivobook", "zenbook"], category: "Laptops" },
+  Acer: { keywords: ["acer", "nitro", "aspire", "predator"], category: "Laptops" },
+  LG: { keywords: ["lg"], category: "Televisores" },
+  Sony: { keywords: ["sony", "bravia"], category: "Televisores" },
+  TCL: { keywords: ["tcl"], category: "Televisores" },
+  Hisense: { keywords: ["hisense"], category: "Televisores" }
 };
 
 // Productos base: solo se usan si la coleccion "productos" esta totalmente vacia.
-// No se tocan si ya tienes datos (igual que tu sistema anterior).
 const DEFAULT_PRODUCTS = [
-  { nombre: "Silla Gamer Edicion Azul", desc: "Envio Gratis en Managua + Armada de silla Gratis + Garantia Garantizada + Atencion Personalizada", precio: "C$125.00", tag: "PRO", img: "", orden: 1 },
-  { nombre: "Silla Gamer Edicion Roja", desc: "Envio Gratis en Managua + Armada de silla Gratis + Garantia Garantizada + Atencion Personalizada", precio: "C$125.00", tag: "PRO", img: "", orden: 2 },
-  { nombre: "Smart TV 55\" pulgadas", desc: "Envio Gratis + Instalacion de soporteria de TV + Factura membretada + Garantia Certificada", precio: "C$560.00", tag: "Media Gama", img: "", orden: 3 },
-  { nombre: "S25 Ultra", desc: "Envio Gratis en Managua + Productos 100% Originales + Garantia Garantizada + Atencion Personalizada", precio: "C$125.00", tag: "Media Gama", img: "", orden: 4 }
+  { nombre: "Silla Gamer Edicion Azul", desc: "Envio Gratis en Managua + Armada de silla Gratis + Garantia Garantizada + Atencion Personalizada", precio: "C$125.00", tag: "PRO", marca: "", img: "", imgs: [], orden: 1 },
+  { nombre: "Silla Gamer Edicion Roja", desc: "Envio Gratis en Managua + Armada de silla Gratis + Garantia Garantizada + Atencion Personalizada", precio: "C$125.00", tag: "PRO", marca: "", img: "", imgs: [], orden: 2 },
+  { nombre: "Smart TV 55\" pulgadas", desc: "Envio Gratis + Instalacion de soporteria de TV + Factura membretada + Garantia Certificada", precio: "C$560.00", tag: "Media Gama", marca: "LG", img: "", imgs: [], orden: 3 },
+  { nombre: "S25 Ultra", desc: "Envio Gratis en Managua + Productos 100% Originales + Garantia Garantizada + Atencion Personalizada", precio: "C$125.00", tag: "Media Gama", marca: "Samsung", img: "", imgs: [], orden: 4 }
 ];
 
 const state = {
   products: [],
   cart: [],
+  favorites: loadFavorites(),
   filters: {
     search: "",
     category: "all",
-    sort: "featured"
+    brand: "all",
+    sort: "featured",
+    onlyFavorites: false
   },
   adminAuth: false,
-  adminRequested: false
+  adminRequested: false,
+  zoom: { images: [], index: 0 }
 };
 
 const els = {
@@ -101,7 +65,10 @@ const els = {
   firebaseStatus: document.getElementById("firebaseStatus"),
   searchInput: document.getElementById("searchInput"),
   categoryFilter: document.getElementById("categoryFilter"),
+  brandFilter: document.getElementById("brandFilter"),
   sortProducts: document.getElementById("sortProducts"),
+  favToggleBtn: document.getElementById("favToggleBtn"),
+  themeToggleBtn: document.getElementById("themeToggleBtn"),
   adminToggleBtn: document.getElementById("adminToggleBtn"),
   logoutBtn: document.getElementById("logoutBtn"),
   adminLogin: document.getElementById("adminLogin"),
@@ -110,9 +77,11 @@ const els = {
   loginBtn: document.getElementById("loginBtn"),
   loginMessage: document.getElementById("loginMessage"),
   adminSection: document.getElementById("admin"),
+  dashboardStats: document.getElementById("dashboardStats"),
   productForm: document.getElementById("productForm"),
   productId: document.getElementById("productId"),
   currentImageUrl: document.getElementById("currentImageUrl"),
+  currentImagesUrls: document.getElementById("currentImagesUrls"),
   currentOrden: document.getElementById("currentOrden"),
   productName: document.getElementById("productName"),
   productBrand: document.getElementById("productBrand"),
@@ -120,6 +89,9 @@ const els = {
   productPrice: document.getElementById("productPrice"),
   productStock: document.getElementById("productStock"),
   productFeatured: document.getElementById("productFeatured"),
+  productNew: document.getElementById("productNew"),
+  productSale: document.getElementById("productSale"),
+  productSalePrice: document.getElementById("productSalePrice"),
   productImageFile: document.getElementById("productImageFile"),
   imagePreview: document.getElementById("imagePreview"),
   productDescription: document.getElementById("productDescription"),
@@ -140,21 +112,91 @@ const els = {
   floatWa: document.getElementById("floatWa"),
   specialOrderForm: document.getElementById("specialOrderForm"),
   specialItem: document.getElementById("specialItem"),
-  specialDetails: document.getElementById("specialDetails")
+  specialDetails: document.getElementById("specialDetails"),
+  zoomModal: document.getElementById("zoomModal"),
+  zoomImage: document.getElementById("zoomImage"),
+  zoomCounter: document.getElementById("zoomCounter")
 };
+
+// ─── FAVORITOS (localStorage, por dispositivo) ─────────────────────────
+function loadFavorites() {
+  try {
+    const raw = localStorage.getItem(FAVORITES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveFavorites() {
+  try {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(state.favorites));
+  } catch (e) {
+    /* almacenamiento no disponible, se ignora */
+  }
+}
+
+function toggleFavorite(id) {
+  if (state.favorites.includes(id)) {
+    state.favorites = state.favorites.filter((favId) => favId !== id);
+  } else {
+    state.favorites.push(id);
+  }
+  saveFavorites();
+  renderProductGrid();
+}
+
+// ─── MODO OSCURO / CLARO ────────────────────────────────────────────────
+function loadTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY) || "light";
+  } catch (e) {
+    return "light";
+  }
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  if (els.themeToggleBtn) {
+    els.themeToggleBtn.textContent = theme === "dark" ? "☀️" : "🌙";
+    els.themeToggleBtn.setAttribute("aria-label", theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+  }
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch (e) {
+    /* ignorado */
+  }
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+  applyTheme(current === "dark" ? "light" : "dark");
+}
 
 // ─── MAPEO: documento Firestore (tus campos reales) <-> objeto de la vista ───
 function normalizeProduct(docId, data) {
   const parsedPrice = parsePrice(data.precio);
+  const parsedSalePrice = data.precioOferta ? parsePrice(data.precioOferta) : null;
+  const detected = detectProduct(data.nombre || "");
+  const images = Array.isArray(data.imgs) && data.imgs.length
+    ? data.imgs.filter(Boolean)
+    : (data.img ? [data.img] : []);
+
   return {
     id: docId,
     name: data.nombre || "",
     category: data.tag || "General",
+    brand: data.marca || detected.brand || "",
     price: parsedPrice,
     priceLabel: formatCurrency(parsedPrice),
+    salePrice: parsedSalePrice,
+    salePriceLabel: parsedSalePrice !== null ? formatCurrency(parsedSalePrice) : "",
+    onSale: data.oferta === true && parsedSalePrice !== null,
+    isNew: data.nuevo === true,
     stock: data.stock === undefined || data.stock === null || data.stock === "" ? null : Number(data.stock),
     featured: data.destacado === true,
-    imageUrl: data.img || "",
+    images,
+    imageUrl: images[0] || "",
     description: data.desc || "",
     orden: Number(data.orden || 0)
   };
@@ -184,23 +226,15 @@ function formatPriceLabel(product) {
 
 function detectProduct(productName) {
   const text = String(productName || "").toLowerCase();
-
   for (const brand in PRODUCT_DATABASE) {
     const data = PRODUCT_DATABASE[brand];
     for (const keyword of data.keywords) {
       if (text.includes(keyword)) {
-        return {
-          brand,
-          category: data.category
-        };
+        return { brand, category: data.category };
       }
     }
   }
-
-  return {
-    brand: "",
-    category: ""
-  };
+  return { brand: "", category: "" };
 }
 
 // ─── CONEXION EN TIEMPO REAL A FIRESTORE ─────────────────────────────
@@ -253,13 +287,17 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
-function imageStyle(url) {
-  const safeUrl = String(url || PLACEHOLDER_IMAGE).replace(/'/g, "%27");
-  return `background-image:url('${safeUrl}')`;
+function safeUrlFor(url) {
+  return String(url || PLACEHOLDER_IMAGE).replace(/"/g, "%22");
 }
 
 function getCategories() {
   return Array.from(new Set(state.products.map((product) => product.category).filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b));
+}
+
+function getBrands() {
+  return Array.from(new Set(state.products.map((product) => product.brand).filter(Boolean)))
     .sort((a, b) => a.localeCompare(b));
 }
 
@@ -279,19 +317,44 @@ function populateCategoryFilter() {
   state.filters.category = els.categoryFilter.value;
 }
 
+function populateBrandFilter() {
+  if (!els.brandFilter) return;
+  const current = els.brandFilter.value || "all";
+  els.brandFilter.innerHTML = '<option value="all">Todas las marcas</option>';
+
+  getBrands().forEach((brand) => {
+    const option = document.createElement("option");
+    option.value = brand;
+    option.textContent = brand;
+    els.brandFilter.appendChild(option);
+  });
+
+  const exists = Array.from(els.brandFilter.options).some((option) => option.value === current);
+  els.brandFilter.value = exists ? current : "all";
+  state.filters.brand = els.brandFilter.value;
+}
+
 function getFilteredProducts() {
   const search = state.filters.search.trim().toLowerCase();
   let list = state.products.slice();
 
   if (search) {
     list = list.filter((product) => {
-      const haystack = `${product.name} ${product.category} ${product.description}`.toLowerCase();
+      const haystack = `${product.name} ${product.category} ${product.brand} ${product.description}`.toLowerCase();
       return haystack.includes(search);
     });
   }
 
   if (state.filters.category !== "all") {
     list = list.filter((product) => product.category === state.filters.category);
+  }
+
+  if (state.filters.brand !== "all") {
+    list = list.filter((product) => product.brand === state.filters.brand);
+  }
+
+  if (state.filters.onlyFavorites) {
+    list = list.filter((product) => state.favorites.includes(product.id));
   }
 
   switch (state.filters.sort) {
@@ -303,6 +366,9 @@ function getFilteredProducts() {
       break;
     case "price-high":
       list.sort((a, b) => b.price - a.price);
+      break;
+    case "new":
+      list.sort((a, b) => Number(b.isNew) - Number(a.isNew) || a.orden - b.orden);
       break;
     default:
       list.sort((a, b) => Number(b.featured) - Number(a.featured) || a.orden - b.orden);
@@ -319,19 +385,33 @@ function renderProductGrid() {
   list.forEach((product) => {
     const outOfStock = product.stock !== null && product.stock <= 0;
     const stockLabel = product.stock === null ? "Disponible" : (outOfStock ? "Sin stock" : `${product.stock} disp.`);
+    const isFav = state.favorites.includes(product.id);
+    const images = product.images.length ? product.images : [PLACEHOLDER_IMAGE];
+
     const card = document.createElement("article");
     card.className = "product-card";
     card.innerHTML = `
-      <div class="thumb" style="${imageStyle(product.imageUrl)}">
-        ${product.featured ? '<span class="badge">Destacado</span>' : ""}
+      <div class="thumb" data-zoom-open="${product.id}">
+        <img src="${safeUrlFor(images[0])}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async">
+        <div class="badge-row">
+          ${product.featured ? '<span class="badge badge-featured">⭐ Destacado</span>' : ""}
+          ${product.isNew ? '<span class="badge badge-new">🔥 Nuevo</span>' : ""}
+          ${product.onSale ? '<span class="badge badge-sale">💸 Oferta</span>' : ""}
+        </div>
         ${outOfStock ? '<span class="badge out">Agotado</span>' : ""}
+        ${images.length > 1 ? `<span class="badge multi-img">📷 ${images.length}</span>` : ""}
+        <button type="button" class="fav-btn ${isFav ? "is-active" : ""}" data-fav="${product.id}" aria-label="${isFav ? "Quitar de favoritos" : "Agregar a favoritos"}">${isFav ? "❤️" : "🤍"}</button>
       </div>
       <div class="body">
-        <span class="cat">${escapeHtml(product.category)}</span>
+        <span class="cat">${escapeHtml(product.brand ? `${product.brand} · ${product.category}` : product.category)}</span>
         <h3>${escapeHtml(product.name)}</h3>
         <p>${escapeHtml(product.description)}</p>
         <div class="meta">
-          <span class="price">${formatPriceLabel(product)}</span>
+          <span class="price-wrap">
+            ${product.onSale
+              ? `<span class="price-old">${formatPriceLabel(product)}</span><span class="price">${product.salePriceLabel}</span>`
+              : `<span class="price">${formatPriceLabel(product)}</span>`}
+          </span>
           <span class="stock">${stockLabel}</span>
         </div>
         <button class="add-btn" type="button" data-add="${product.id}" ${outOfStock ? "disabled" : ""}>
@@ -353,10 +433,11 @@ function renderManagerTable() {
   }
 
   state.products.forEach((product) => {
+    const thumbUrl = product.imageUrl || PLACEHOLDER_IMAGE;
     const row = document.createElement("div");
     row.className = "mini-row";
     row.innerHTML = `
-      <div class="mini-thumb" style="${imageStyle(product.imageUrl)}"></div>
+      <img class="mini-thumb" src="${safeUrlFor(thumbUrl)}" alt="" loading="lazy">
       <div class="mini-info">
         <strong>${escapeHtml(product.name)}</strong>
         <span>${escapeHtml(product.category)} | ${formatPriceLabel(product)} | stock ${product.stock === null ? "sin control" : product.stock}</span>
@@ -370,11 +451,46 @@ function renderManagerTable() {
   });
 }
 
+// ─── DASHBOARD DE ESTADISTICAS ──────────────────────────────────────────
+function renderDashboard() {
+  if (!els.dashboardStats) return;
+
+  const total = state.products.length;
+  const inventoryValue = state.products.reduce((sum, product) => {
+    const stock = product.stock === null ? 1 : product.stock;
+    return sum + product.price * Math.max(stock, 0);
+  }, 0);
+  const featuredCount = state.products.filter((product) => product.featured).length;
+  const newCount = state.products.filter((product) => product.isNew).length;
+  const saleCount = state.products.filter((product) => product.onSale).length;
+  const outOfStockCount = state.products.filter((product) => product.stock !== null && product.stock <= 0).length;
+  const categoryCount = getCategories().length;
+
+  const cards = [
+    { label: "Productos totales", value: total },
+    { label: "Valor de inventario", value: formatCurrency(inventoryValue) },
+    { label: "Destacados", value: featuredCount },
+    { label: "Nuevos", value: newCount },
+    { label: "En oferta", value: saleCount },
+    { label: "Sin stock", value: outOfStockCount },
+    { label: "Categorias activas", value: categoryCount }
+  ];
+
+  els.dashboardStats.innerHTML = cards.map((card) => `
+    <div class="stat-card">
+      <span class="stat-value">${escapeHtml(card.value)}</span>
+      <span class="stat-label">${escapeHtml(card.label)}</span>
+    </div>
+  `).join("");
+}
+
 function refresh() {
   cleanCart();
   populateCategoryFilter();
+  populateBrandFilter();
   renderProductGrid();
   renderManagerTable();
+  renderDashboard();
   renderCart();
 }
 
@@ -395,7 +511,10 @@ function syncAdminVisibility() {
   els.adminToggleBtn.setAttribute("aria-expanded", "true");
   els.adminToggleBtn.textContent = state.adminAuth ? "Ocultar panel" : "Ocultar acceso";
 
-  if (state.adminAuth) renderManagerTable();
+  if (state.adminAuth) {
+    renderManagerTable();
+    renderDashboard();
+  }
 }
 
 function toggleAdminArea(forceOpen) {
@@ -438,22 +557,25 @@ function setLoginMessage(text, type) {
 function fillForm(product) {
   els.productId.value = product.id;
   els.currentImageUrl.value = product.imageUrl || "";
+  els.currentImagesUrls.value = JSON.stringify(product.images || []);
   els.currentOrden.value = product.orden;
   els.productName.value = product.name;
-  const detected = detectProduct(product.name || "");
-  if (els.productBrand) els.productBrand.value = detected.brand;
-  els.productCategory.value = detected.category || product.category;
+  els.productBrand.value = product.brand || "";
+  els.productCategory.value = product.category;
   els.productPrice.value = Number.isFinite(product.price)
-    ? Number(product.price).toLocaleString("es-NI", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })
+    ? Number(product.price).toLocaleString("es-NI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : "";
   els.productStock.value = product.stock === null ? "" : product.stock;
   els.productFeatured.value = String(product.featured);
+  els.productNew.checked = Boolean(product.isNew);
+  els.productSale.checked = Boolean(product.onSale);
+  els.productSalePrice.value = product.salePrice
+    ? Number(product.salePrice).toLocaleString("es-NI", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : "";
+  els.productSalePrice.disabled = !product.onSale;
   els.productDescription.value = product.description;
   els.productImageFile.value = "";
-  setImagePreview(product.imageUrl);
+  setImagePreview(product.images || []);
   setFormMessage(`Editando "${product.name}". Guarda para publicar los cambios.`, "");
   els.productName.focus();
 }
@@ -462,17 +584,24 @@ function resetForm() {
   els.productForm.reset();
   els.productId.value = "";
   els.currentImageUrl.value = "";
+  els.currentImagesUrls.value = "[]";
   els.currentOrden.value = "";
-  if (els.productBrand) els.productBrand.value = "";
+  els.productBrand.value = "";
   els.productFeatured.value = "false";
-  setImagePreview("");
+  els.productSalePrice.disabled = true;
+  setImagePreview([]);
   setFormMessage("", "");
 }
 
-function setImagePreview(url) {
-  const hasImage = Boolean(url);
-  els.imagePreview.classList.toggle("is-hidden", !hasImage);
-  els.imagePreview.style.backgroundImage = hasImage ? `url('${String(url).replace(/'/g, "%27")}')` : "";
+function setImagePreview(urls) {
+  const list = Array.isArray(urls) ? urls.filter(Boolean) : (urls ? [urls] : []);
+  if (!list.length) {
+    els.imagePreview.classList.add("is-hidden");
+    els.imagePreview.innerHTML = "";
+    return;
+  }
+  els.imagePreview.classList.remove("is-hidden");
+  els.imagePreview.innerHTML = list.map((url) => `<div class="image-preview-item" style="background-image:url('${String(url).replace(/'/g, "%27")}')"></div>`).join("");
 }
 
 function setFormMessage(text, type) {
@@ -480,15 +609,9 @@ function setFormMessage(text, type) {
   els.formMessage.className = `form-message${type ? ` ${type}` : ""}`;
 }
 
-// Comprime la imagen a maximo 800px (igual que tu sistema anterior) y la
-// convierte a base64, para guardarla directo en el documento sin usar Storage.
-function readAndCompressImage(file) {
+// Comprime cada imagen a maximo 800px y la convierte a base64.
+function compressImage(file) {
   return new Promise((resolve, reject) => {
-    if (!file) {
-      resolve(els.currentImageUrl.value || "");
-      return;
-    }
-
     if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
       reject(new Error("Formato de imagen no permitido."));
       return;
@@ -516,6 +639,28 @@ function readAndCompressImage(file) {
   });
 }
 
+async function readAndCompressImages(files, currentImages) {
+  const list = Array.from(files || []);
+  if (!list.length) {
+    try {
+      return JSON.parse(currentImages || "[]");
+    } catch (e) {
+      return [];
+    }
+  }
+  const limited = list.slice(0, MAX_IMAGES_PER_PRODUCT);
+  const compressed = [];
+  for (const file of limited) {
+    compressed.push(await compressImage(file));
+  }
+  return compressed;
+}
+
+function handleSaleToggle() {
+  els.productSalePrice.disabled = !els.productSale.checked;
+  if (!els.productSale.checked) els.productSalePrice.value = "";
+}
+
 async function handleProductSubmit(event) {
   event.preventDefault();
 
@@ -525,18 +670,23 @@ async function handleProductSubmit(event) {
   }
 
   const nombre = els.productName.value.trim();
+  const marca = els.productBrand.value.trim();
   const tag = els.productCategory.value.trim();
   const rawPrice = els.productPrice.value;
-  const price = Number(
-    String(rawPrice)
-      .replace(/,/g, "")
-      .replace(/\s/g, "")
-  );
+  const price = Number(String(rawPrice).replace(/,/g, "").replace(/\s/g, ""));
   const stockValue = els.productStock.value.trim();
   const desc = els.productDescription.value.trim();
+  const onSale = els.productSale.checked;
+  const rawSalePrice = els.productSalePrice.value;
+  const salePrice = onSale ? Number(String(rawSalePrice).replace(/,/g, "").replace(/\s/g, "")) : null;
 
   if (!nombre || !tag || !desc || Number.isNaN(price) || price < 0) {
     setFormMessage("Revisa los campos requeridos antes de guardar.", "error");
+    return;
+  }
+
+  if (onSale && (Number.isNaN(salePrice) || salePrice < 0)) {
+    setFormMessage("Ingresa un precio de oferta valido.", "error");
     return;
   }
 
@@ -544,15 +694,20 @@ async function handleProductSubmit(event) {
   els.saveProductBtn.textContent = "Guardando...";
 
   try {
-    const img = await readAndCompressImage(els.productImageFile.files[0]);
+    const imgs = await readAndCompressImages(els.productImageFile.files, els.currentImagesUrls.value);
 
     const data = {
       nombre,
       desc,
       precio: formatCurrency(price),
       tag,
-      img,
-      destacado: els.productFeatured.value === "true"
+      marca,
+      imgs,
+      img: imgs[0] || "",
+      destacado: els.productFeatured.value === "true",
+      nuevo: els.productNew.checked,
+      oferta: onSale,
+      precioOferta: onSale ? formatCurrency(salePrice) : ""
     };
 
     if (stockValue === "") {
@@ -595,12 +750,51 @@ async function deleteProduct(id) {
 }
 
 function handleImageFileChange() {
-  const file = els.productImageFile.files[0];
-  if (!file) {
-    setImagePreview(els.currentImageUrl.value || "");
+  const files = els.productImageFile.files;
+  if (!files || !files.length) {
+    try {
+      setImagePreview(JSON.parse(els.currentImagesUrls.value || "[]"));
+    } catch (e) {
+      setImagePreview([]);
+    }
     return;
   }
-  setImagePreview(URL.createObjectURL(file));
+  const urls = Array.from(files).slice(0, MAX_IMAGES_PER_PRODUCT).map((file) => URL.createObjectURL(file));
+  setImagePreview(urls);
+}
+
+// ─── ZOOM DE IMAGENES ───────────────────────────────────────────────────
+function openZoom(productId) {
+  const product = state.products.find((item) => item.id === productId);
+  if (!product) return;
+  const images = product.images.length ? product.images : [PLACEHOLDER_IMAGE];
+  state.zoom.images = images;
+  state.zoom.index = 0;
+  renderZoom();
+  els.zoomModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function renderZoom() {
+  const { images, index } = state.zoom;
+  if (!images.length) return;
+  els.zoomImage.src = safeUrlFor(images[index]);
+  els.zoomCounter.textContent = images.length > 1 ? `${index + 1} / ${images.length}` : "";
+  els.zoomModal.querySelectorAll("[data-zoom-nav]").forEach((btn) => {
+    btn.classList.toggle("is-hidden", images.length <= 1);
+  });
+}
+
+function zoomNav(direction) {
+  const { images } = state.zoom;
+  if (images.length <= 1) return;
+  state.zoom.index = (state.zoom.index + direction + images.length) % images.length;
+  renderZoom();
+}
+
+function closeZoom() {
+  els.zoomModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
 }
 
 // ─── CARRITO / COTIZACION ──────────────────────────────────────────────
@@ -647,6 +841,10 @@ function updateQty(id, amount) {
   renderCart();
 }
 
+function effectivePrice(product) {
+  return product.onSale && product.salePrice !== null ? product.salePrice : product.price;
+}
+
 function renderCart() {
   els.cartItems.innerHTML = "";
   els.emptyCart.classList.toggle("is-hidden", state.cart.length > 0);
@@ -658,14 +856,15 @@ function renderCart() {
     const product = state.products.find((candidate) => candidate.id === item.id);
     if (!product) return;
 
-    const subtotal = product.price * item.qty;
+    const unitPrice = effectivePrice(product);
+    const subtotal = unitPrice * item.qty;
     total += subtotal;
     totalQty += item.qty;
 
     const row = document.createElement("div");
     row.className = "cart-row";
     row.innerHTML = `
-      <div class="cart-thumb" style="${imageStyle(product.imageUrl)}"></div>
+      <img class="cart-thumb" src="${safeUrlFor(product.imageUrl)}" alt="" loading="lazy">
       <div class="cart-info">
         <strong>${escapeHtml(product.name)}</strong>
         <span>${formatCurrency(subtotal)}</span>
@@ -713,7 +912,8 @@ function sendQuote() {
   state.cart.forEach((item) => {
     const product = state.products.find((candidate) => candidate.id === item.id);
     if (!product) return;
-    const subtotal = product.price * item.qty;
+    const unitPrice = effectivePrice(product);
+    const subtotal = unitPrice * item.qty;
     total += subtotal;
     message += `- ${product.name} x${item.qty}: ${formatCurrency(subtotal)}\n`;
   });
@@ -752,14 +952,48 @@ function bindEvents() {
     renderProductGrid();
   });
 
+  if (els.brandFilter) {
+    els.brandFilter.addEventListener("change", () => {
+      state.filters.brand = els.brandFilter.value;
+      renderProductGrid();
+    });
+  }
+
   els.sortProducts.addEventListener("change", () => {
     state.filters.sort = els.sortProducts.value;
     renderProductGrid();
   });
 
+  if (els.favToggleBtn) {
+    els.favToggleBtn.addEventListener("click", () => {
+      state.filters.onlyFavorites = !state.filters.onlyFavorites;
+      els.favToggleBtn.classList.toggle("is-active", state.filters.onlyFavorites);
+      els.favToggleBtn.setAttribute("aria-pressed", String(state.filters.onlyFavorites));
+      renderProductGrid();
+    });
+  }
+
+  if (els.themeToggleBtn) {
+    els.themeToggleBtn.addEventListener("click", toggleTheme);
+  }
+
   els.productGrid.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-add]");
-    if (button) addToCart(button.dataset.add);
+    const addButton = event.target.closest("[data-add]");
+    const favButton = event.target.closest("[data-fav]");
+    const zoomTarget = event.target.closest("[data-zoom-open]");
+
+    if (favButton) {
+      event.stopPropagation();
+      toggleFavorite(favButton.dataset.fav);
+      return;
+    }
+    if (addButton) {
+      addToCart(addButton.dataset.add);
+      return;
+    }
+    if (zoomTarget) {
+      openZoom(zoomTarget.dataset.zoomOpen);
+    }
   });
 
   els.productTable.addEventListener("click", (event) => {
@@ -776,12 +1010,14 @@ function bindEvents() {
   els.productImageFile.addEventListener("change", handleImageFileChange);
   els.productForm.addEventListener("submit", handleProductSubmit);
   els.resetFormBtn.addEventListener("click", resetForm);
+  els.productSale.addEventListener("change", handleSaleToggle);
 
   if (els.productName) {
     els.productName.addEventListener("keyup", () => {
+      if (els.productBrand.value.trim()) return;
       const result = detectProduct(els.productName.value || "");
-      if (els.productBrand) els.productBrand.value = result.brand;
-      if (els.productCategory) els.productCategory.value = result.category;
+      if (result.brand) els.productBrand.value = result.brand;
+      if (result.category && !els.productCategory.value.trim()) els.productCategory.value = result.category;
     });
   }
 
@@ -823,16 +1059,33 @@ function bindEvents() {
     els.menuToggleBtn.setAttribute("aria-expanded", String(isOpen));
   });
 
+  if (els.zoomModal) {
+    els.zoomModal.addEventListener("click", (event) => {
+      if (event.target.closest("[data-zoom-close]")) closeZoom();
+      if (event.target.closest("[data-zoom-next]")) zoomNav(1);
+      if (event.target.closest("[data-zoom-prev]")) zoomNav(-1);
+    });
+  }
+
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeCart();
+    if (event.key === "Escape") {
+      closeCart();
+      closeZoom();
+    }
+    if (els.zoomModal && els.zoomModal.getAttribute("aria-hidden") === "false") {
+      if (event.key === "ArrowRight") zoomNav(1);
+      if (event.key === "ArrowLeft") zoomNav(-1);
+    }
   });
 }
 
 // ─── INICIO ───────────────────────────────────────────────────────────
 async function init() {
   els.floatWa.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hola, quisiera mas informacion sobre sus productos.")}`;
+  applyTheme(loadTheme());
   bindEvents();
   populateCategoryFilter();
+  populateBrandFilter();
   renderProductGrid();
   renderCart();
   syncAdminVisibility();
