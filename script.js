@@ -15,6 +15,65 @@ const ADMIN_PASSWORD = "eugenio12";
 const PLACEHOLDER_IMAGE = "https://placehold.co/400x250/121212/d4af37?text=Nic+Store";
 const MAX_IMAGE_SIDE = 800;
 
+const PRODUCT_DATABASE = {
+  Apple: {
+    keywords: ["iphone", "ipad", "macbook", "airpods", "apple"],
+    category: "Celulares"
+  },
+  Samsung: {
+    keywords: ["galaxy", "samsung"],
+    category: "Celulares"
+  },
+  Xiaomi: {
+    keywords: ["xiaomi", "redmi", "poco"],
+    category: "Celulares"
+  },
+  Motorola: {
+    keywords: ["motorola", "moto"],
+    category: "Celulares"
+  },
+  Honor: {
+    keywords: ["honor"],
+    category: "Celulares"
+  },
+  HP: {
+    keywords: ["hp", "pavilion", "victus", "omen"],
+    category: "Laptops"
+  },
+  Dell: {
+    keywords: ["dell", "inspiron", "latitude", "alienware"],
+    category: "Laptops"
+  },
+  Lenovo: {
+    keywords: ["lenovo", "thinkpad", "ideapad", "legion"],
+    category: "Laptops"
+  },
+  Asus: {
+    keywords: ["asus", "rog", "vivobook", "zenbook"],
+    category: "Laptops"
+  },
+  Acer: {
+    keywords: ["acer", "nitro", "aspire", "predator"],
+    category: "Laptops"
+  },
+  LG: {
+    keywords: ["lg"],
+    category: "Televisores"
+  },
+  Sony: {
+    keywords: ["sony", "bravia"],
+    category: "Televisores"
+  },
+  TCL: {
+    keywords: ["tcl"],
+    category: "Televisores"
+  },
+  Hisense: {
+    keywords: ["hisense"],
+    category: "Televisores"
+  }
+};
+
 // Productos base: solo se usan si la coleccion "productos" esta totalmente vacia.
 // No se tocan si ya tienes datos (igual que tu sistema anterior).
 const DEFAULT_PRODUCTS = [
@@ -56,6 +115,7 @@ const els = {
   currentImageUrl: document.getElementById("currentImageUrl"),
   currentOrden: document.getElementById("currentOrden"),
   productName: document.getElementById("productName"),
+  productBrand: document.getElementById("productBrand"),
   productCategory: document.getElementById("productCategory"),
   productPrice: document.getElementById("productPrice"),
   productStock: document.getElementById("productStock"),
@@ -85,12 +145,13 @@ const els = {
 
 // ─── MAPEO: documento Firestore (tus campos reales) <-> objeto de la vista ───
 function normalizeProduct(docId, data) {
+  const parsedPrice = parsePrice(data.precio);
   return {
     id: docId,
     name: data.nombre || "",
     category: data.tag || "General",
-    price: parsePrice(data.precio),
-    priceLabel: data.precio || "C$00,000",
+    price: parsedPrice,
+    priceLabel: formatCurrency(parsedPrice),
     stock: data.stock === undefined || data.stock === null || data.stock === "" ? null : Number(data.stock),
     featured: data.destacado === true,
     imageUrl: data.img || "",
@@ -104,8 +165,42 @@ function parsePrice(precio) {
   return Number.isNaN(num) ? 0 : num;
 }
 
+function formatCurrency(value) {
+  try {
+    return new Intl.NumberFormat("es-NI", {
+      style: "currency",
+      currency: "NIO",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(Number(value) || 0);
+  } catch (e) {
+    return `C$${Number(value || 0).toFixed(2)}`;
+  }
+}
+
 function formatPriceLabel(product) {
-  return product.priceLabel || `C$${product.price.toFixed(2)}`;
+  return product.priceLabel || formatCurrency(product.price);
+}
+
+function detectProduct(productName) {
+  const text = String(productName || "").toLowerCase();
+
+  for (const brand in PRODUCT_DATABASE) {
+    const data = PRODUCT_DATABASE[brand];
+    for (const keyword of data.keywords) {
+      if (text.includes(keyword)) {
+        return {
+          brand,
+          category: data.category
+        };
+      }
+    }
+  }
+
+  return {
+    brand: "",
+    category: ""
+  };
 }
 
 // ─── CONEXION EN TIEMPO REAL A FIRESTORE ─────────────────────────────
@@ -345,8 +440,15 @@ function fillForm(product) {
   els.currentImageUrl.value = product.imageUrl || "";
   els.currentOrden.value = product.orden;
   els.productName.value = product.name;
-  els.productCategory.value = product.category;
-  els.productPrice.value = product.price;
+  const detected = detectProduct(product.name || "");
+  if (els.productBrand) els.productBrand.value = detected.brand;
+  els.productCategory.value = detected.category || product.category;
+  els.productPrice.value = Number.isFinite(product.price)
+    ? Number(product.price).toLocaleString("es-NI", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    : "";
   els.productStock.value = product.stock === null ? "" : product.stock;
   els.productFeatured.value = String(product.featured);
   els.productDescription.value = product.description;
@@ -361,6 +463,7 @@ function resetForm() {
   els.productId.value = "";
   els.currentImageUrl.value = "";
   els.currentOrden.value = "";
+  if (els.productBrand) els.productBrand.value = "";
   els.productFeatured.value = "false";
   setImagePreview("");
   setFormMessage("", "");
@@ -423,11 +526,16 @@ async function handleProductSubmit(event) {
 
   const nombre = els.productName.value.trim();
   const tag = els.productCategory.value.trim();
-  const precioNum = Number.parseFloat(els.productPrice.value);
+  const rawPrice = els.productPrice.value;
+  const price = Number(
+    String(rawPrice)
+      .replace(/,/g, "")
+      .replace(/\s/g, "")
+  );
   const stockValue = els.productStock.value.trim();
   const desc = els.productDescription.value.trim();
 
-  if (!nombre || !tag || !desc || Number.isNaN(precioNum) || precioNum < 0) {
+  if (!nombre || !tag || !desc || Number.isNaN(price) || price < 0) {
     setFormMessage("Revisa los campos requeridos antes de guardar.", "error");
     return;
   }
@@ -441,7 +549,7 @@ async function handleProductSubmit(event) {
     const data = {
       nombre,
       desc,
-      precio: `C$${precioNum.toFixed(2)}`,
+      precio: formatCurrency(price),
       tag,
       img,
       destacado: els.productFeatured.value === "true"
@@ -560,7 +668,7 @@ function renderCart() {
       <div class="cart-thumb" style="${imageStyle(product.imageUrl)}"></div>
       <div class="cart-info">
         <strong>${escapeHtml(product.name)}</strong>
-        <span>C$${subtotal.toFixed(2)}</span>
+        <span>${formatCurrency(subtotal)}</span>
       </div>
       <div class="qty-controls">
         <button type="button" data-qty-down="${product.id}" aria-label="Restar">-</button>
@@ -572,7 +680,7 @@ function renderCart() {
     els.cartItems.appendChild(row);
   });
 
-  els.cartTotal.textContent = `C$${total.toFixed(2)}`;
+  els.cartTotal.textContent = formatCurrency(total);
   els.cartCount.forEach((count) => {
     count.textContent = totalQty;
   });
@@ -607,10 +715,10 @@ function sendQuote() {
     if (!product) return;
     const subtotal = product.price * item.qty;
     total += subtotal;
-    message += `- ${product.name} x${item.qty}: C$${subtotal.toFixed(2)}\n`;
+    message += `- ${product.name} x${item.qty}: ${formatCurrency(subtotal)}\n`;
   });
 
-  message += `\nTotal estimado: C$${total.toFixed(2)}`;
+  message += `\nTotal estimado: ${formatCurrency(total)}`;
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
 }
 
@@ -668,6 +776,14 @@ function bindEvents() {
   els.productImageFile.addEventListener("change", handleImageFileChange);
   els.productForm.addEventListener("submit", handleProductSubmit);
   els.resetFormBtn.addEventListener("click", resetForm);
+
+  if (els.productName) {
+    els.productName.addEventListener("keyup", () => {
+      const result = detectProduct(els.productName.value || "");
+      if (els.productBrand) els.productBrand.value = result.brand;
+      if (els.productCategory) els.productCategory.value = result.category;
+    });
+  }
 
   els.specialOrderForm.addEventListener("submit", handleSpecialOrder);
 
