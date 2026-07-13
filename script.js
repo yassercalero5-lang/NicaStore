@@ -90,7 +90,7 @@ function normalizeProduct(docId, data) {
     name: data.nombre || "",
     category: data.tag || "General",
     price: parsePrice(data.precio),
-    priceLabel: data.precio || "C$0.00",
+    priceLabel: data.precio || "C$00,000",
     stock: data.stock === undefined || data.stock === null || data.stock === "" ? null : Number(data.stock),
     featured: data.destacado === true,
     imageUrl: data.img || "",
