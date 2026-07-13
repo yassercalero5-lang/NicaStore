@@ -18,10 +18,10 @@ const MAX_IMAGE_SIDE = 800;
 // Productos base: solo se usan si la coleccion "productos" esta totalmente vacia.
 // No se tocan si ya tienes datos (igual que tu sistema anterior).
 const DEFAULT_PRODUCTS = [
-  { nombre: "Silla Gamer Edicion Azul", desc: "Envio Gratis en Managua + Armada de silla Gratis + Garantia Garantizada + Atencion Personalizada", precio: "$125", tag: "PRO", img: "", orden: 1 },
-  { nombre: "Silla Gamer Edicion Roja", desc: "Envio Gratis en Managua + Armada de silla Gratis + Garantia Garantizada + Atencion Personalizada", precio: "$125", tag: "PRO", img: "", orden: 2 },
-  { nombre: "Smart TV 55\" pulgadas", desc: "Envio Gratis + Instalacion de soporteria de TV + Factura membretada + Garantia Certificada", precio: "$560", tag: "Media Gama", img: "", orden: 3 },
-  { nombre: "S25 Ultra", desc: "Envio Gratis en Managua + Productos 100% Originales + Garantia Garantizada + Atencion Personalizada", precio: "$125", tag: "Media Gama", img: "", orden: 4 }
+  { nombre: "Silla Gamer Edicion Azul", desc: "Envio Gratis en Managua + Armada de silla Gratis + Garantia Garantizada + Atencion Personalizada", precio: "C$125.00", tag: "PRO", img: "", orden: 1 },
+  { nombre: "Silla Gamer Edicion Roja", desc: "Envio Gratis en Managua + Armada de silla Gratis + Garantia Garantizada + Atencion Personalizada", precio: "C$125.00", tag: "PRO", img: "", orden: 2 },
+  { nombre: "Smart TV 55\" pulgadas", desc: "Envio Gratis + Instalacion de soporteria de TV + Factura membretada + Garantia Certificada", precio: "C$560.00", tag: "Media Gama", img: "", orden: 3 },
+  { nombre: "S25 Ultra", desc: "Envio Gratis en Managua + Productos 100% Originales + Garantia Garantizada + Atencion Personalizada", precio: "C$125.00", tag: "Media Gama", img: "", orden: 4 }
 ];
 
 const state = {
@@ -90,7 +90,7 @@ function normalizeProduct(docId, data) {
     name: data.nombre || "",
     category: data.tag || "General",
     price: parsePrice(data.precio),
-    priceLabel: data.precio || "$0",
+    priceLabel: data.precio || "C$0.00",
     stock: data.stock === undefined || data.stock === null || data.stock === "" ? null : Number(data.stock),
     featured: data.destacado === true,
     imageUrl: data.img || "",
@@ -105,7 +105,7 @@ function parsePrice(precio) {
 }
 
 function formatPriceLabel(product) {
-  return product.priceLabel || `$${product.price.toFixed(2)}`;
+  return product.priceLabel || `C$${product.price.toFixed(2)}`;
 }
 
 // ─── CONEXION EN TIEMPO REAL A FIRESTORE ─────────────────────────────
@@ -441,7 +441,7 @@ async function handleProductSubmit(event) {
     const data = {
       nombre,
       desc,
-      precio: `$${precioNum.toFixed(2)}`,
+      precio: `C$${precioNum.toFixed(2)}`,
       tag,
       img,
       destacado: els.productFeatured.value === "true"
@@ -560,7 +560,7 @@ function renderCart() {
       <div class="cart-thumb" style="${imageStyle(product.imageUrl)}"></div>
       <div class="cart-info">
         <strong>${escapeHtml(product.name)}</strong>
-        <span>$${subtotal.toFixed(2)}</span>
+        <span>C$${subtotal.toFixed(2)}</span>
       </div>
       <div class="qty-controls">
         <button type="button" data-qty-down="${product.id}" aria-label="Restar">-</button>
@@ -572,7 +572,7 @@ function renderCart() {
     els.cartItems.appendChild(row);
   });
 
-  els.cartTotal.textContent = `$${total.toFixed(2)}`;
+  els.cartTotal.textContent = `C$${total.toFixed(2)}`;
   els.cartCount.forEach((count) => {
     count.textContent = totalQty;
   });
@@ -607,10 +607,10 @@ function sendQuote() {
     if (!product) return;
     const subtotal = product.price * item.qty;
     total += subtotal;
-    message += `- ${product.name} x${item.qty}: $${subtotal.toFixed(2)}\n`;
+    message += `- ${product.name} x${item.qty}: C$${subtotal.toFixed(2)}\n`;
   });
 
-  message += `\nTotal estimado: $${total.toFixed(2)}`;
+  message += `\nTotal estimado: C$${total.toFixed(2)}`;
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank", "noopener");
 }
 
