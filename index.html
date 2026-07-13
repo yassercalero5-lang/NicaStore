@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nic Store | Catalogo virtual</title>
-  <meta name="description" content="Catalogo virtual de Nic Store: telefonos, TVs, sillas gamer y mas, con cotizaciones por WhatsApp y panel privado de administracion.">
+  <title>Nic Store | Tienda 100% online de tecnología</title>
+  <meta name="description" content="Nic Store: catálogo de telefonos, televisores y tecnología con envío a los 17 departamentos de Nicaragua, pago con tarjeta BAC y Banpro, y cotizaciones por WhatsApp.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <script type="module" src="script.js"></script>
+  <script type="module" src="script.js?v=3"></script>
 </head>
 <body>
   <header class="site-header">
@@ -30,6 +30,7 @@
     </nav>
 
     <div class="header-actions">
+      <button class="theme-toggle" type="button" id="themeToggleBtn" aria-label="Cambiar a modo oscuro">🌙</button>
       <button class="cart-button" type="button" data-open-cart>
         Cotizacion <span data-cart-count>0</span>
       </button>
@@ -39,15 +40,20 @@
   <main id="inicio">
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">● Managua y Tipitapa</p>
+        <p class="eyebrow">🚚 Envíos a los 17 departamentos de Nicaragua</p>
         <h1>Tecnología que <span>te conecta</span></h1>
-        <p class="lead">Descubre celulares, TVs y lo último en tecnología con calidad, buenos precios y cotización rápida.</p>
+        <p class="lead">Descubre celulares, TVs y lo último en tecnología con calidad, buenos precios y cotización rápida. Tienda 100% online, con cobertura y envío rápido a todo el país.</p>
         <div class="hero-actions">
           <a class="btn primary" href="#catalogo">Ver catálogo <b>→</b></a>
           <a class="btn secondary hero-wa" href="#contacto">Cotizar por WhatsApp</a>
         </div>
         <div class="hero-trust">
-          <span>✓ Productos originales</span><span>⚡ Atención rápida</span><span>◈ Compra segura</span>
+          <span>✓ Productos originales</span><span>⚡ Atención rápida</span><span>◈ Compra segura</span><span>🚚 Cobertura nacional</span>
+        </div>
+        <div class="payment-strip">
+          <span class="strip-label">Aceptamos</span>
+          <span class="payment-badge bac">💳 Tarjeta BAC</span>
+          <span class="payment-badge banpro">💳 Tarjeta Banpro</span>
         </div>
       </div>
       <div class="hero-visual">
@@ -65,7 +71,7 @@
       <div class="catalog-toolbar">
         <label>
           <span>Buscar</span>
-          <input type="search" id="searchInput" placeholder="Nombre, categoria o descripcion">
+          <input type="search" id="searchInput" placeholder="Nombre, categoria, marca o descripcion">
         </label>
         <label>
           <span>Categoria</span>
@@ -74,14 +80,24 @@
           </select>
         </label>
         <label>
+          <span>Marca</span>
+          <select id="brandFilter">
+            <option value="all">Todas las marcas</option>
+          </select>
+        </label>
+        <label>
           <span>Orden</span>
           <select id="sortProducts">
             <option value="featured">Destacados primero</option>
+            <option value="new">Nuevos primero</option>
             <option value="name">Nombre A-Z</option>
             <option value="price-low">Precio menor</option>
             <option value="price-high">Precio mayor</option>
           </select>
         </label>
+        <div class="toolbar-fav">
+          <button class="fav-toggle-btn" type="button" id="favToggleBtn" aria-pressed="false">🤍 Solo favoritos</button>
+        </div>
       </div>
 
       <div class="firebase-status" id="firebaseStatus" role="status" aria-live="polite">
@@ -116,10 +132,13 @@
         <p>Agrega, edita o elimina articulos. Las imagenes se guardan comprimidas dentro del mismo producto.</p>
       </div>
 
+      <div class="dashboard-stats" id="dashboardStats"></div>
+
       <div class="admin-layout">
         <form class="product-form" id="productForm">
           <input type="hidden" id="productId">
           <input type="hidden" id="currentImageUrl">
+          <input type="hidden" id="currentImagesUrls" value="[]">
           <input type="hidden" id="currentOrden">
 
           <div class="field">
@@ -127,18 +146,22 @@
             <input type="text" id="productName" placeholder="Ej. iPhone 15 Pro Max" required>
           </div>
 
-          <div class="field-row">
+          <div class="field-row three">
+            <div class="field">
+              <label for="productBrand">Marca</label>
+              <input type="text" id="productBrand" placeholder="Ej. Samsung, Apple">
+            </div>
             <div class="field">
               <label for="productCategory">Categoria / Etiqueta</label>
               <input type="text" id="productCategory" placeholder="Ej. PRO, Alta Gama" required>
             </div>
             <div class="field">
               <label for="productPrice">Precio (CORDOBAS)</label>
-              <input type="number" id="productPrice" min="0" step="0.01" placeholder="0.00" required>
+              <input type="text" id="productPrice" inputmode="decimal" pattern="[0-9,\.\s]*" placeholder="20,000.00" required>
             </div>
           </div>
 
-          <div class="field-row">
+          <div class="field-row three">
             <div class="field">
               <label for="productStock">Stock (opcional)</label>
               <input type="number" id="productStock" min="0" step="1" placeholder="Vacio = sin control de stock">
@@ -150,12 +173,27 @@
                 <option value="true">Destacado</option>
               </select>
             </div>
+            <div class="field field-check">
+              <label for="productNew">🔥 Producto nuevo</label>
+              <input type="checkbox" id="productNew">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field field-check">
+              <label for="productSale">💸 En oferta</label>
+              <input type="checkbox" id="productSale">
+            </div>
+            <div class="field">
+              <label for="productSalePrice">Precio de oferta</label>
+              <input type="text" id="productSalePrice" inputmode="decimal" pattern="[0-9,\.\s]*" placeholder="15,000.00" disabled>
+            </div>
           </div>
 
           <div class="field">
-            <label for="productImageFile">Imagen del producto</label>
-            <input type="file" id="productImageFile" accept="image/png,image/jpeg,image/webp">
-            <p class="field-help">La imagen se comprime automaticamente. Si editas y no eliges otra, se conserva la actual.</p>
+            <label for="productImageFile">Imagenes del producto (hasta 5)</label>
+            <input type="file" id="productImageFile" accept="image/png,image/jpeg,image/webp" multiple>
+            <p class="field-help">Puedes subir varias fotos. Se comprimen automaticamente. Si editas y no eliges otras, se conservan las actuales.</p>
             <div class="image-preview is-hidden" id="imagePreview"></div>
           </div>
 
@@ -188,7 +226,7 @@
       <div>
         <p class="eyebrow">Pedido especial</p>
         <h2>Necesitas un articulo que no esta en inventario?</h2>
-        <p>Envia el modelo, marca o caracteristicas que buscas y te respondemos por WhatsApp con disponibilidad y precio.</p>
+        <p>Envia el modelo, marca o caracteristicas que buscas y te respondemos por WhatsApp con disponibilidad y precio. Hacemos envios rapidos a los 17 departamentos de Nicaragua.</p>
       </div>
       <form class="special-order" id="specialOrderForm">
         <label>
@@ -229,27 +267,37 @@
     </section>
   </aside>
 
+  <div class="zoom-modal" id="zoomModal" aria-hidden="true">
+    <div class="zoom-backdrop" data-zoom-close></div>
+    <div class="zoom-content">
+      <button type="button" class="zoom-close" data-zoom-close aria-label="Cerrar zoom">x</button>
+      <button type="button" class="zoom-nav zoom-prev" data-zoom-prev data-zoom-nav aria-label="Imagen anterior">‹</button>
+      <img id="zoomImage" src="" alt="Imagen ampliada del producto">
+      <button type="button" class="zoom-nav zoom-next" data-zoom-next data-zoom-nav aria-label="Imagen siguiente">›</button>
+      <span class="zoom-counter" id="zoomCounter"></span>
+    </div>
+  </div>
+
   <a class="float-wa" id="floatWa" href="#" aria-label="Contactar por WhatsApp" target="_blank" rel="noopener">
     <svg viewBox="0 0 32 32" width="28" height="28" fill="currentColor" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.4.7 4.6 1.9 6.5L4 29l7.7-1.9c1.8 1 3.9 1.5 6.3 1.5 6.6 0 12-5.4 12-12S22.6 3 16 3zm0 21.8c-2 0-3.9-.5-5.5-1.5l-.4-.2-4.6 1.2 1.2-4.5-.3-.4C5.3 18 4.7 16.5 4.7 15c0-6.2 5.1-11.3 11.3-11.3S27.3 8.8 27.3 15 22.2 24.8 16 24.8zm6.2-8.4c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7.1-.1.3-.4.5-.5.2-.2.2-.3.3-.5.1-.2 0-.4 0-.6-.1-.2-.8-1.9-1.1-2.6-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.8 0 1.7 1.2 3.3 1.4 3.5.2.2 2.4 3.7 5.9 5.1.8.3 1.5.6 2 .7.8.3 1.6.2 2.2.1.7-.1 2-.8 2.3-1.6.3-.8.3-1.4.2-1.6-.1-.1-.3-.2-.6-.4z"/></svg>
   </a>
 
- 
-
   <footer class="site-footer">
-     <div class="providers">
-
-    <h3>Proveedores By</h3>
-
-    <div class="providers-logos">
-
+    <div class="providers">
+      <h3>Proveedores By</h3>
+      <div class="providers-logos">
         <img src="vortex.jpeg" alt="Vortes Mobile">
-
         <img src="logo.jpeg" alt="VIP Phones">
-
+      </div>
     </div>
-
-</div>
-    <div><strong>Nic Store</strong><span>Catálogo de tecnología y cotizaciones.</span></div>
+    <div>
+      <strong>Nic Store</strong>
+      <span>Catálogo de tecnología y cotizaciones. Envíos a los 17 departamentos de Nicaragua.</span>
+      <div class="footer-payment">
+        <span class="payment-badge">💳 BAC</span>
+        <span class="payment-badge">💳 Banpro</span>
+      </div>
+    </div>
     <div class="footer-admin">
       <button class="footer-admin-link" type="button" id="adminToggleBtn" aria-expanded="false">Acceso administrativo</button>
       <button class="footer-admin-link is-hidden" type="button" id="logoutBtn">Cerrar sesión</button>
